@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Search - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: arial, sans-serif; }
+        .logo { font-size: 80px; font-weight: bold; margin-bottom: 30px; letter-spacing: -5px; }
+        .search-container { width: 100%; max-width: 600px; text-align: center; }
+        .my-search-bar { border-radius: 30px; padding: 14px 25px 14px 50px; border: 1px solid #dfe1e5; font-size: 1.1rem; width: 100%; transition: 0.3s; }
+        .my-search-bar:focus { box-shadow: 0 1px 6px rgba(32,33,36,0.28); outline: none; }
+        .search-icon { left: 20px; top: 16px; color: #9aa0a6; font-size: 1.2rem; }
+        .apps-nav { display: flex; gap: 30px; margin-top: 50px; justify-content: center; }
+        .app-item { text-align: center; text-decoration: none; color: #555; font-size: 13px; }
+        .icon-box { width: 55px; height: 55px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; margin-bottom: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .bg-fb { background: #1877F2; } .bg-insta { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+        .bg-flip { background: #2874f0; } .bg-call { background: #34A853; }
+    </style>
+</head>
+<body>
+
+    <div class="logo">
+        <span style="color:#4285F4">H</span><span style="color:#EA4335">a</span><span style="color:#FBBC05">p</span><span style="color:#4285F4">p</span><span style="color:#34A853">l</span><span style="color:#EA4335">y</span>
+        <span style="color:#4285F4">1</span><span style="color:#EA4335">9</span><span style="color:#FBBC05">47</span>
+    </div>
+
+    <div class="search-container px-3">
+        <form action="/results" method="GET">
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute search-icon"></i>
+                <input type="text" name="q" class="my-search-bar" placeholder="happy ki nagri dhoondein..." required>
+            </div>
+            <button type="submit" class="btn btn-light mt-4 border px-4">Happy search bar</button>
+        </form>
+
+        <div class="apps-nav">
+            <a href="https://facebook.com" class="app-item"><div class="icon-box bg-fb"><i class="bi bi-facebook"></i></div><span>Facebook</span></a>
+            <a href="https://instagram.com" class="app-item"><div class="icon-box bg-insta"><i class="bi bi-instagram"></i></div><span>Instagram</span></a>
+            <a href="https://flipkart.com" class="app-item"><div class="icon-box bg-flip"><i class="bi bi-cart-fill"></i></div><span>Flipkart</span></a>
+            <a href="tel:1234567890" class="app-item"><div class="icon-box bg-call"><i class="bi bi-telephone-fill"></i></div><span>Call</span></a>
+        </div>
+    </div>
+
+</body>
+</html>
