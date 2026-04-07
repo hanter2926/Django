@@ -1,0 +1,58 @@
+To Create a super user or admin panel we have to run this command:-
+
+Step 1 :- First Get In The Change Directory :- cd myproject
+
+Step 2 :- To connect Data base we have to run These command
+                First :- python manage.py makemigrations
+                Second :- python manage.py migrate
+
+Run Command In Your My Project Directory :-python manage.py createsuperuser
+
+NOTE-> 
+ALWAYS CHANGE YOUR PROJECT NAME in settings.py in project folder
+in this line
+WSGI_APPLICATION = 'myproject.wsgi.application'
+
+TO this Eg:-
+WSGI_APPLICATION = 'Tridev.wsgi.application'
+
+
+✅ Day  4 – Model And Admin Register
+
+
+APP Folder => models.py
+
+# It Is used to create table in the data base
+# Create your models here 
+
+Step 1 :- First Get In The Change Directory :- cd myproject
+.
+# When Ever we use any image in my model we need to run pip install pillow in the terminal
+
+
+#Whenever we create a model in models.py we need to run two commands in the terminal
+#1. python manage.py makemigrations
+
+#2. python manage.py migrate
+
+from django.db import models
+
+class Product(models.Model):
+    product_name = models.CharField(max_length=255)
+    product_price = models.DecimalField(max_digits=10, decimal_places=2)
+    product_description = models.TextField()
+    product_image = models.ImageField(upload_to='products/')
+
+    def __str__(self):
+        return self.product_name
+
+
+APP Folder => admin.py
+
+
+# Register your models here.
+
+from django.contrib import admin
+from .models import Product
+
+admin.site.register(Product)
