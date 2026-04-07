@@ -1,0 +1,19 @@
+To Create a super user or admin panel we have to run this command:-
+
+Step 1 :- First Get In The Change Directory :- cd myproject
+
+Step 2 :- To connect Data base we have to run These command
+                First :- python manage.py makemigrations
+                Second :- python manage.py migrate
+
+Run Command In Your My Project Directory :-python manage.py createsuperuser
+
+NOTE-> 
+ALWAYS CHANGE YOUR PROJECT NAME in settings.py in project folder
+in this line
+WSGI_APPLICATION = 'myproject.wsgi.application'
+
+TO this Eg:-
+WSGI_APPLICATION = 'Tridev.wsgi.application'
+
+
