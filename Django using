@@ -1,0 +1,14 @@
+Similar As Point Q2
+
+Q5- What  is frame work and what is a library?
+🧠 What is a Framework?
+A framework is a pre-built structure that provides a complete foundation to develop applications.
+👉 It controls the flow of the program and tells you how to build your project.
+📌 Example:
+Django
+Angular
+🎯 Key Points:
+You follow the framework’s rules
+It decides how your code runs
+Provides ready-made tools & structure
+👉 This is called Inversion of Control (framework calls your code)
