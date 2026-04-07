@@ -1,0 +1,37 @@
+A library is a collection of pre-written functions or tools that you can use when needed.
+👉 You are in control — you decide when and where to use it
+📌 Example:
+NumPy
+jQuery
+🎯 Key Points:
+You call the library
+No strict structure
+Used to perform specific tasks
+
+⚖️ Difference Between Framework & Library
+Feature
+Framework 🏗️
+Library 📚
+Control
+Framework controls flow
+You control flow
+Usage
+Full structure
+Specific functions
+Flexibility
+Less flexible
+More flexible
+Example
+Django
+NumPy
+
+
+🎯 Simple Example
+Using a Framework = Like building a house with a fixed blueprint 🏠
+Using a Library = Like using tools (hammer, drill) when needed 🔧
+
+🧾 Final Short Answer (Exam Ready)
+Framework: A pre-defined structure that controls application flow.
+Library: A collection of functions used by the developer when needed.
+
+
