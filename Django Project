@@ -1,0 +1,27 @@
+⚙️ 1. Install Django
+First, make sure you have Python installed:-
+pip install django
+Check installation:-
+django-admin --version
+
+📁 2. Create a New Project
+django-admin startproject myproject
+👉 This creates a folder like:
+myproject/
+├── manage.py
+└── myproject/
+    ├── __init__.py
+    ├── settings.py
+    ├── urls.py
+    ├── asgi.py
+    └── wsgi.py
+
+
+
+▶️ 3. Run the Server
+First Go inside The project folder:- cd myproject
+For Running Project:- python manage.py runserver
+
+👉 Open browser:
+http://127.0.0.1:8000/
+You’ll see Django’s welcome page 🎉
