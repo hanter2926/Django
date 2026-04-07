@@ -1,0 +1,31 @@
+Q1- What is Django? Why do we need to use this?
+Django is a high-level Python web framework used to build websites and web applications quickly and efficiently. It follows the MVT (Model-View-Template) architecture and comes with many built-in features.
+👉 In simple words:
+ Django helps developers create powerful websites without writing everything from scratch.
+
+🔥 Why do we use Django?
+Here are the main reasons:
+1. ⚡ Fast Development
+Django provides ready-made components (like admin panel, authentication).
+You can build projects much faster compared to starting from zero.
+2. 🔒 Security
+Protects against common attacks like:
+SQL Injection
+Cross-Site Scripting (XSS)
+CSRF attacks
+Built-in security features make apps safer.
+3. 🧩 Built-in Features
+Admin panel (no need to build manually)
+User authentication system
+ORM (database handling without SQL)
+4. 📈 Scalable
+Used by large platforms like:
+Instagram
+Pinterest
+Can handle both small and large projects.
+5. 🧼 Clean & Organized Code
+Follows DRY (Don’t Repeat Yourself) principle
+Makes code easy to maintain and reuse
+6. 🌐 Works with Databases Easily
+Supports databases like SQLite, MySQL, PostgreSQL
+You don’t need to write complex SQL queries
