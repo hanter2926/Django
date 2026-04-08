@@ -1,0 +1,26 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.result-card {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    transition: 0.3s;
+}
+
+.result-card:hover {
+    background-color: #f9f9f9;
+}
+
+.result-card a {
+    text-decoration: none;
+    color: #1a0dab;
+}
+
+.result-card a:hover {
+    text-decoration: underline;
+}

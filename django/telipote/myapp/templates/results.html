@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ query }} - Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background: #fff; }
+        .header-nav { border-bottom: 1px solid #dfe1e5; padding: 15px; background: white; }
+        .mini-search-bar { border-radius: 24px; padding: 8px 20px; border: 1px solid #dfe1e5; width: 100%; max-width: 600px; box-shadow: 0 1px 6px rgba(32,33,36,0.1); }
+        .custom-card { border: 1px solid #ddd; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .price { color: #388e3c; font-weight: bold; }
+        /* Google Results Styling */
+        .gsc-control-cse { border: none !important; padding: 0 !important; }
+    </style>
+</head>
+<body>
+
+<div class="header-nav sticky-top">
+    <div class="container d-flex align-items-center">
+        <a href="/" class="text-decoration-none fw-bold fs-4 me-4"><span style="color:#4285F4">H</span></a>
+        <form action="/results" method="GET" class="flex-grow-1">
+            <input type="text" name="q" class="mini-search-bar" value="{{ query }}">
+        </form>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h6 class="text-muted small">DATABASE IMPORTENT</h6>
+            {% for item in results %}
+            <div class="custom-card shadow-sm mb-4">
+                <div class="row g-0">
+                    {% if item.image %}
+                    <div class="col-md-4">
+                        <img src="{{ item.image.url }}" class="img-fluid rounded-start" style="height:100%; object-fit:cover;">
+                    </div>
+                    {% endif %}
+                    <div class="col-md-8 p-3">
+                        <a href="{{ item.url }}" target="_blank" class="h5 text-primary text-decoration-none">{{ item.title }}</a>
+                        <p class="text-muted small my-2">{{ item.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="price">Special Offer</span>
+                            <a href="tel:123" class="btn btn-sm btn-success px-3"><i class="bi bi-telephone"></i> Call Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <hr class="my-4">
+
+            <h6 class="text-muted small mb-3">happy ki duniya</h6>
+            <script async src="https://cse.google.com/cse.js?cx=partner-pub-2698861478625135:4054652431"></script>
+            <div class="gcse-searchresults-only"></div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-3 bg-light border-0">
+                <h6>Quick Apps</h6>
+                <div class="list-group list-group-flush">
+                    <a href="https://instagram.com" class="list-group-item bg-transparent"><i class="bi bi-instagram text-danger"></i> Instagram</a>
+                    <a href="https://facebook.com" class="list-group-item bg-transparent"><i class="bi bi-facebook text-primary"></i> Facebook</a>
+                    <a href="https://flipkart.com" class="list-group-item bg-transparent"><i class="bi bi-cart text-warning"></i> Flipkart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
