@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Our Products</title>
+    <style>
+        .product-card { border: 1px solid #ddd; padding: 10px; margin: 10px; display: inline-block; width: 200px; }
+        .product-card img { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+    <h1>All Products</h1>
+
+    <div class="product-container">
+        {% for p in items %}
+            <div class="product-card">
+                {% if p.product_image %}
+                    <img src="{{ p.product_image.url }}" alt="{{ p.product_name }}">
+                {% endif %}
+                
+                <h3>{{ p.product_name }}</h3>
+                <p>Price: ₹{{ p.product_price }}</p>
+                <p>{{ p.product_description|truncatewords:10 }}</p>
+                <small>Category: {{ p.category.category_name }}</small>
+            </div>
+        {% empty %}
+            <p>No products found.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
