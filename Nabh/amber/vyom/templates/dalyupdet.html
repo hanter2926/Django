@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dally updet</title>
+</head>
+<body>
+    <table border="1" style="border-collapse: collapse; width: 100%; text-align: center;">
+    <thead>
+        <tr>
+            <th>Row Name</th>
+            {% for i in range_31 %}
+                <th>Day {{ i }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row_name in row_names %}
+        <tr>
+            <td style="font-weight: bold;">{{ row_name }}</td>
+            
+            {% for i in range_31 %}
+            <td>
+                <input type="number" name="{{ row_name }}_day_{{ i }}" style="width: 50px;">
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
