@@ -1,0 +1,98 @@
+Computer Science ek bahut bada aur mahatvapurn kshetra hai. Niche iske sabhi mukhya pahluon ko cover karte hue points diye gaye hain jo aapko iski gahrai samajhne mein madad karenge:
+
+1. Computer Science Ka Parichay (Introduction)
+Computer Science sirf computer chalana nahi, balki samasyaon ko hal karne (problem-solving) ka vigyan hai.
+
+Ismein hardware aur software dono ke bich ke sambandh ka adhyayan kiya jata hai.
+
+Algorithms iska dil hain, jo kisi bhi kaam ko karne ka step-by-step tarika batate hain.
+
+Information Theory se hum data ko store aur communicate karne ke tarike samajhte hain.
+
+Computational Thinking se hum badi samasyaon ko chhote aur saral hisson mein todte hain.
+
+2. Programming aur Languages
+Programming languages insaan aur machine ke bich samvad ka madhyam hain.
+
+Python aaj ke samay mein AI aur Data Science ke liye sabse lokpriya language hai.
+
+C aur C++ system-level programming aur performance ke liye jani jati hain.
+
+Java ka upyog bade enterprise applications aur Android apps mein hota hai.
+
+Compiler ek aisa program hai jo high-level language ko machine code mein badalta hai.
+
+Debuggin ka matlab hai code mein maujood galtiyon (bugs) ko dhoondhna aur unhe thik karna.
+
+3. Data Structures aur Algorithms (DSA)
+Data Structure data ko organize karne ka tarika hai taki use efficiently use kiya ja sake.
+
+Arrays, Linked Lists, Stacks, aur Queues basic linear data structures hain.
+
+Trees aur Graphs non-linear data structures hain jo complex data ko dikhate hain.
+
+Searching algorithms (jaise Binary Search) data dhoondhne ki speed badhate hain.
+
+Sorting algorithms (jaise QuickSort, MergeSort) data ko sahi kram mein rakhte hain.
+
+Big O Notation ka upyog kisi algorithm ki efficiency mapne ke liye kiya jata hai.
+
+4. Operating System (OS)
+OS user aur computer hardware ke bich ek interface ka kaam karta hai.
+
+Windows, macOS, aur Linux sabse bade operating systems hain.
+
+Kernel OS ka sabse mahatvapurn bhag hai jo memory aur CPU ko manage karta hai.
+
+Multi-tasking se ek hi samay par kai saare programs chalaye ja sakte hain.
+
+File Systems data ko hard drive ya SSD par save aur manage karte hain.
+
+5. Networking aur Internet
+Computer networks do ya usse zyada computers ko data share karne ke liye jodte hain.
+
+IP Address internet par har device ki ek anokhi pehchan hoti hai.
+
+HTTP/HTTPS protocols hain jinse web pages browser par load hote hain.
+
+Cloud Computing (AWS, Azure) ka matlab hai internet par servers aur storage ka upyog karna.
+
+Cybersecurity ka uddeshya data aur networks ko hackers se bachana hai.
+
+6. Artificial Intelligence (AI) aur Machine Learning
+AI ka maksad computers ko insaano ki tarah sochne aur sikhne ke layak banana hai.
+
+Machine Learning (ML) mein data ke patterns se system khud ko behtar banata hai.
+
+Deep Learning neural networks ka upyog karta hai jo insani dimag se prerit hain.
+
+NLP (Natural Language Processing) computers ko hamari bhasha samajhne mein madad karta hai.
+
+Edge AI ka upyog internet ke bina devices par hi AI model chalane ke liye hota hai.
+
+7. Database Management (DBMS)
+Database badi matra mein data ko surakshit aur vyavasthit dhang se store karta hai.
+
+SQL (Structured Query Language) ka upyog relational databases manage karne ke liye hota hai.
+
+NoSQL databases (jaise MongoDB) unstructured data ke liye behtar hote hain.
+
+Data Integrity ka matlab hai ki database mein rakha data sahi aur bharosemand rahe.
+
+8. Software Development Life Cycle (SDLC)
+Software banane ke liye ek process follow kiya jata hai jise SDLC kehte hain.
+
+Ismein Requirement Analysis, Design, Coding, Testing, aur Maintenance shamil hai.
+
+Agile methodology aaj kal software banane ka sabse fast aur flexible tarika hai.
+
+Version Control (jaise Git/GitHub) ka upyog code ke badlavon ko track karne ke liye hota hai.
+
+9. Future Trends
+Quantum Computing computer ki shakti ko kai guna badha degi.
+
+Blockchain technology se data ko decentralize aur ultra-secure banaya ja raha hai.
+
+Internet of Things (IoT) se har physical cheez (fridge, car, light) internet se jud rahi hai.
+
+Kya aap chahte hain ki main inmein se kisi ek vishay (jaise Python ya Networking) par aur vistar se jankari doon?
