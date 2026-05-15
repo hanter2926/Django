@@ -1,0 +1,45 @@
+:root {
+    --whatsapp-green: #25D366;
+    --whatsapp-dark: #075E54;
+    --bg-light: #f0f2f5;
+    --white: #ffffff;
+    --shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+/* Navbar Style */
+.navbar {
+    background-color: var(--whatsapp-dark) !important;
+    box-shadow: var(--shadow);
+}
+
+.navbar-brand, .nav-link {
+    color: white !important;
+    transition: 0.3s;
+}
+
+.nav-link:hover {
+    color: var(--whatsapp-green) !important;
+    transform: translateY(-2px);
+}
+
+/* Professional Buttons */
+.btn-whatsapp {
+    background-color: var(--whatsapp-green);
+    color: white;
+    border-radius: 20px;
+    padding: 8px 20px;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128C7E;
+    transform: scale(1.05);
+    color: white;
+}

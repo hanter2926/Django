@@ -1,0 +1,28 @@
+.chat-box {
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    background-color: #e5ddd5;
+    height: 70vh;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.msg {
+    max-width: 70%;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-size: 15px;
+    position: relative;
+}
+
+.msg-sent {
+    background: #dcf8c6;
+    margin-left: auto;
+    border-top-right-radius: 0;
+}
+
+.msg-received {
+    background: white;
+    margin-right: auto;
+    border-top-left-radius: 0;
+}

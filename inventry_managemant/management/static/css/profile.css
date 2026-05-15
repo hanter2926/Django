@@ -1,0 +1,32 @@
+.profile-header {
+    background: var(--whatsapp-dark);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 0 0 50px 50px;
+}
+
+.profile-dp-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 5px solid white;
+    margin-top: -75px;
+    background: white;
+    object-fit: cover;
+}
+
+.story-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--whatsapp-green);
+    padding: 2px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.story-circle:hover {
+    transform: scale(1.1);
+    border-color: #128C7E;
+}

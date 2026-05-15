@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product App</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% load static %}
+   
+{% block content %}
+ <link rel="stylesheet" href="{% static 'css/profile_settings.css' %}">
+<div class="container mt-5">
+    <div class="card p-4 shadow-sm">
+        <h2>Profile Settings</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="text-center mb-3">
+                <img src="{{ user.profile.dp.url }}" class="rounded-circle" width="100" height="100">
+            </div>
+            {{ u_form.as_p }}
+            {{ p_form.as_p }}
+            <button type="submit" class="btn btn-warning btn-block">Update Settings</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+</body>
+</html>  
