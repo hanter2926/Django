@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<h3>Announcement: Welcome to our Ecommerce Website</h3>
+
+<nav>
+    <a href="{% url 'home' %}">Home</a> 
+    <a href="{% url 'about' %}">About Us</a> 
+    <a href="{% url 'products' %}">Products</a> 
+    <a href="{% url 'category' %}">Category</a> 
+    <a href="{% url 'contact' %}">Contact</a>  
+    <a href="{% url 'support' %}">Contact</a>
+
+
+    {% if user.is_authenticated %}
+        <select onchange="location = this.value;">
+            <option>User</option>
+            <option value="#">My Profile</option>
+            <option value="{% url 'my_orders' %}">My Order</option>
+            <option value="{% url 'support' %}">Support</option>
+            <option value="{% url 'logout' %}">Logout</option>
+        </select>
+    {% else %}
+        <a href="{% url 'login' %}" class="login-btn">Login</a>
+    {% endif %}
+</nav>
+
+<hr>
+
+<h1>AI Generated Video For Ecommerce Website</h1>
+
+<video width="500" controls>
+    <source src="{% static 'videos/demo.mp4' %}" type="video/mp4">
+    
+</video>
+
+<h2>Categories</h2>
+<section class="hero-slider">
+    <div class="slider-track">
+        <img src="{% static 'images/banner1.jpg' %}">
+        <img src="{% static 'images/banner2.jpg' %}">
+        <img src="{% static 'images/banner3.jpg' %}">
+    </div>
+</section>
+<h2>Top Products</h2>
+
+<div>
+    <p>Product 1</p>
+    <p>Product 2</p>
+    <p>Product 3</p>
+</div>
+
+<a href="{% url 'products' %}" class="btn">Explore More</a>
+
+<h2>Shop By Category</h2>
+
+<div class="category-row">
+    {% for category in categories %}
+        <div class="category-card">
+            <img src="{{ category.image.url }}">
+            <p>{{ category.name }}</p>
+        </div>
+    {% empty %}
+        <p>No categories found</p>
+    {% endfor %}
+</div>
+<h2>
+    {% if query %}
+        Search Result For "{{ query }}"
+    {% else %}
+        Top Products
+    {% endif %}
+</h2>
+<div class="review">
+    <h1>Customer Reviews</h1>
+
+    <div class="products">
+        {% for review in reviews %}
+            <div class="product-card">
+                {% if review.profile_image %}
+                    <img src="{{ review.profile_image.url }}" width="80" height="80">
+                {% endif %}
+
+                <h3>{{ review.full_name }}</h3>
+                <p>{{ review.description }}</p>
+                <p>⭐ {{ review.star_rating }}/5</p>
+            </div>
+        {% empty %}
+            <p>No Reviews Yet</p>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'submit_feedback' %}" class="btn">Submit Feedback</a>
+</div>
+
+<hr>
+
+<footer>
+    <h2>Website Logo</h2>
+    <p>Organisation Address</p>
+
+    {% comment %} <a href="#">Contact</a> 
+    <a href="#">About</a> 
+    <a href="#">Career</a> 
+    <a href="#">Our Vision</a> 
+    <a href="#">Our Mission</a> 
+    <a href="#">Privacy Policy</a> 
+    <a href="#">Refund Policy</a> {% endcomment %}
+
+    <p>Email: vikrampal803302@gmail.com</p>
+    <p>Alternate Mobile No: 7065140327</p>
+    <p>Google Map Link</p>
+    <p>Social Media Icons</p>
+</footer>
+
+</body>
+</html>

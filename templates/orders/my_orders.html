@@ -1,0 +1,30 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Orders</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<h1 align="center">My Orders</h1>
+
+<div class="products">
+
+{% for order in orders %}
+    <div class="product-card">
+        <h3>Order #{{ order.id }}</h3>
+        <p>Name: {{ order.full_name }}</p>
+        <p>Total: ₹{{ order.total_amount }}</p>
+        <p>Status: {{ order.status }}</p>
+        <p>Date: {{ order.created_at }}</p>
+    </div>
+{% empty %}
+    <p>No orders found</p>
+{% endfor %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact Us</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="contact-container">
+
+    <h1>Contact Us</h1>
+
+    <div class="contact-box">
+
+        <h2>ShopMate Ecommerce</h2>
+
+        <p><strong>Email:</strong> vikrampal803302@gmail.com</p>
+
+        <p><strong>Mobile:</strong> 7065140327</p>
+
+        <p><strong>Address:</strong> India</p>
+
+        <p><strong>Support Time:</strong> 24x7 Available</p>
+
+        <a href="{% url 'support' %}" class="btn">
+            Go To Support
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Categories</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="category-page">
+
+    <h1>Shop By Categories</h1>
+
+    <div class="category-grid">
+
+        {% for category in categories %}
+
+            <div class="category-box">
+
+                {% if category.image %}
+                    <img src="{{ category.image.url }}">
+                {% endif %}
+
+                <h3>{{ category.name }}</h3>
+
+            </div>
+
+        {% empty %}
+
+            <p>No Categories Found</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

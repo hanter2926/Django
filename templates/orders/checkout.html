@@ -1,0 +1,31 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<h1 align="center">Checkout</h1>
+
+<form method="POST" class="feedback-form">
+    {% csrf_token %}
+
+    <label>Full Name</label>
+    <input type="text" name="full_name" required>
+
+    <label>Mobile No</label>
+    <input type="text" name="mobile_no" required>
+
+    <label>Address</label>
+    <textarea name="address" required></textarea>
+
+    <h3>Total Amount: ₹{{ total }}</h3>
+
+    <button type="submit" class="btn">Place Order</button>
+</form>
+
+</body>
+</html>

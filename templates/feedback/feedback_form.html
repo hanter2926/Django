@@ -1,0 +1,32 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Feedback</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<h1 align="center">Submit Feedback</h1>
+
+<form method="POST" enctype="multipart/form-data" class="feedback-form">
+    {% csrf_token %}
+
+    <label>Full Name</label>
+    {{ form.full_name }}
+
+    <label>Profile Image</label>
+    {{ form.profile_image }}
+
+    <label>Feedback Description</label>
+    {{ form.description }}
+
+    <label>Star Rating</label>
+    {{ form.star_rating }}
+
+    <button type="submit" class="btn">Submit</button>
+</form>
+
+</body>
+</html>

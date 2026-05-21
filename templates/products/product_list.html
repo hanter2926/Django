@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<h1 align="center">All Products</h1>
+
+<div class="category">
+    {% for category in categories %}
+        <div>
+            <img src="{{ category.image.url }}">
+            <p align="center">{{ category.name }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+
+<div class="products">
+    {% for product in products %}
+        <div class="product-card">
+            <img src="{{ product.image.url }}" width="150">
+            <h2>{{ product.name }}</h2>
+            <p>₹{{ product.price }}</p>
+            <p>{{ product.description }}</p>
+            <p>Qty: {{ product.quantity }}</p>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn">
+                    Add To Cart
+            </a>
+            <a href="{% url 'add_to_wishlist' product.id %}" class="btn">
+              Wishlist
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
