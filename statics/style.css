@@ -1,0 +1,81 @@
+body {
+    background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: white;
+}
+
+.game-container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.score-board {
+    display: flex;
+    justify-content: space-around;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.music-control {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+/* 8x8 Grid System for Candies */
+#board {
+    width: 480px;
+    height: 480px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    padding: 5px;
+    border: 4px solid #fff;
+}
+
+/* Candy Styles (Original Colors) */
+.candy {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: grab;
+    transition: transform 0.1s ease;
+    box-shadow: inset -5px -5px 10px rgba(0,0,0,0.3), inset 5px 5px 10px rgba(255,255,255,0.4);
+}
+
+.candy:active {
+    cursor: grabbing;
+    transform: scale(0.9);
+}
+
+/* Candies Colors Definitions */
+.red    { background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000); }
+.blue   { background: radial-gradient(circle at 30% 30%, #3399ff, #0044cc); }
+.green  { background: radial-gradient(circle at 30% 30%, #66ff66, #009900); }
+.yellow { background: radial-gradient(circle at 30% 30%, #ffff66, #cccc00); }
+.purple { background: radial-gradient(circle at 30% 30%, #cc66ff, #6600cc); }
+.orange { background: radial-gradient(circle at 30% 30%, #ff9933, #cc5500); }
+
+/* Galat move par shake karne ka effect */
+.shake-error {
+    animation: shake 0.2s ease-in-out 2;
+    border: 2px solid red !important;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+    100% { transform: translateX(0); }
+}

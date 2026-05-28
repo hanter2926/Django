@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Candy Social Hub</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 20px; }
+        .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #333; border-bottom: 2px solid #ff758c; padding-bottom: 5px; }
+        .user-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; }
+        .btn-send { background: #3399ff; color: white; }
+        .btn-accept { background: #66ff66; color: black; }
+        .btn-reject { background: #ff4d4d; color: white; }
+        .btn-back { background: #555; color: white; display: inline-block; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'game_home' %}" class="btn btn-back">Back Game</a>
+    <h1><img src="##">Candy Crush Social Hub</h1>
+
+    <div class="section">
+        <h2>📥 Pending Friend Requests ({{ pending_requests|length }})</h2>
+        {% if pending_requests %}
+            {% for req in pending_requests %}
+                <div class="user-row">
+                    <span><strong>{{ req.sender.username }}</strong> ne aapko request bheji hai.</span>
+                    <div>
+                        <a href="{% url 'accept_friend_request' req.id %}" class="btn btn-accept">Accept</a>
+                        <a href="{% url 'reject_friend_request' req.id %}" class="btn btn-reject">Reject</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Koi nayi request nahi hai.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>👥 Your Friends ({{ friends|length }})</h2>
+        {% if friends %}
+            {% for friend in friends %}
+                <div class="user-row">
+                    <span>🟢 <strong>{{ friend.username }}</strong></span>
+                    <a href="{% url 'chat_room' friend.id %}" class="btn btn-send">💬 Chat Message</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Abhi aapka koi dost nahi bana hai. Niche se logo ko add karein!</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>🔍 Find Active Candy Players</h2>
+        {% if other_players %}
+            {% for player in other_players %}
+                <div class="user-row">
+                    <span>👤 {{ player.username }} (Level: {{ player.profile.current_level }})</span>
+                    <a href="{% url 'send_friend_request' player.id %}" class="btn btn-send">Add Friend</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Koi naya player nahi mila.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

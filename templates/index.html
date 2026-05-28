@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Original Candy Crush Clone</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        /* Target Board Styles */
+        .target-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .target-box {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .target-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .color-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        
+        <div class="target-container">
+            <h3 style="margin: 0; font-size: 18px;">🎯 Current Level Target</h3>
+            <div class="target-box">
+                <div class="target-item">
+                    <span class="color-indicator" style="background: red;"></span> 
+                    Red: <span id="target-red">0</span>
+                </div>
+                <div class="target-item">
+                    <span class="color-indicator" style="background: blue;"></span> 
+                    Blue: <span id="target-blue">0</span>
+                </div>
+                <div class="target-item">
+                    <span class="color-indicator" style="background: green;"></span> 
+                    Green: <span id="target-green">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="score-board">
+            <div>👤 Player: {{ username }}</div>
+            <div>Score: <span id="score">0</span></div>
+            <div>🪙 Coins: <span id="coins">{{ coins }}</span></div>
+            <div>🎯 Level: <span id="level">{{ level }}</span></div>
+        </div>
+
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-around; font-size: 16px;">
+            <a href="{% url 'social_dashboard' %}" style="color: #ffff66; font-weight: bold; text-decoration: none; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 5px;">🌐 Social Friends Hub</a>
+            <a href="{% url 'logout' %}" style="color: #ff4d4d; font-weight: bold; text-decoration: none; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 5px;">🛑 Logout</a>
+        </div>
+
+        <div class="music-control">
+            <label for="bg-music-upload">🎵 Choose Custom BG Song: </label>
+            <input type="file" id="bg-music-upload" accept="audio/*">
+            <audio id="bg-audio" loop></audio>
+        </div>
+
+        <div id="board"></div>
+    </div>
+
+    <script src="{% static 'game.js' %}"></script>
+</body>
+</html>
