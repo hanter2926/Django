@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>home</title>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h2>Top Products Section</h2>
+<div class="row">
+    {% for product in top_products %}
+        {% endfor %}
+</div>
+
+<h2>All Products</h2>
+<div class="row">
+    {% for product in all_products %}
+    <div class="card" style="width: 18rem; position: relative;">
+        
+        <div class="badges-container" style="position: absolute; top: 10px; left: 10px; z-index: 10;">
+            {% if product.best_seller %}
+                <span class="badge bg-success">Best Seller</span>
+            {% endif %}
+
+            {% if product.limited_offer %}
+                <span class="badge bg-warning text-dark">Limited Deal</span>
+            {% endif %}
+
+            {% if product.discount_percentage > 0 %}
+                <span class="badge bg-danger">{{ product.discount_percentage }}% OFF</span>
+            {% endif %}
+        </div>
+
+        <img src="{{ product.product_image.url }}" class="card-img-top" alt="{{ product.product_name }}">
+        
+        <div class="card-body">
+            <h5 class="card-title">{{ product.product_name }}</h5>
+            <p class="card-text">
+                <span class="text-muted" style="text-decoration: line-through;">${{ product.product_original_price }}</span>
+                <strong class="text-dark">${{ product.product_sale_price }}</strong>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</body>
+</html>
