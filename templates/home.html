@@ -1,0 +1,21 @@
+
+cd{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="jumbotron bg-light p-5 rounded shadow-sm">
+        <h1 class="display-4 text-primary">Welcome to My Website!</h1>
+        <p class="lead mt-3">Taktak app ka homepage successfully load ho gaya hai. 😎</p>
+        <hr class="my-4">
+        
+        {% if announcement %}
+            <div class="alert alert-info role="alert"">
+                <strong>Announcement:</strong> {{ announcement.message }}
+            </div>
+        {% endif %}
+        
+        <p>Explore our pages to know more about our team, mission, and services.</p>
+        <a class="btn btn-primary btn-lg mt-2" href="/about/" role="button">About Our Team</a>
+    </div>
+</div>
+{% endblock %}

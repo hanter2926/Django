@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            
+            <h2 class="mb-4 text-warning font-weight-bold" style="color: #f0ad4e;">Shipping & Delivery Policy</h2>
+            <hr>
+            
+            <p class="lead text-muted">We are committed to delivering your order accurately, in good condition, and always on time. Please read our shipping terms below.</p>
+            
+            <h4 class="mt-4 text-dark">1. Order Processing Time</h4>
+            <p>All orders are processed within <strong>1-2 business days</strong> (excluding weekends and holidays) after receiving your order confirmation email. You will receive another notification when your order has shipped.</p>
+            
+            <h4 class="mt-4 text-dark">2. Shipping Rates & Delivery Estimates</h4>
+            <p>Shipping charges for your order will be calculated and displayed at checkout. We offer the following delivery options:</p>
+            
+            <table class="table table-bordered table-striped mt-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Shipping Method</th>
+                        <th>Estimated Delivery Time</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Standard Shipping</td>
+                        <td>5 - 7 Business Days</td>
+                        <td>Free / ₹50</td>
+                    </tr>
+                    <tr>
+                        <td>Express Shipping</td>
+                        <td>2 - 3 Business Days</td>
+                        <td>₹150</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4 class="mt-4 text-dark">3. Shipment Tracking</h4>
+            <p>When your order has shipped, you will receive an email notification from us which will include a tracking number you can use to check its status. Please allow 24 hours for the tracking information to become active.</p>
+            
+            <h4 class="mt-4 text-dark">4. Damages & Issues</h4>
+            <p>My Website is not liable for any products damaged or lost during shipping. If you received your order damaged, please contact the shipment carrier or our support team directly to file a claim.</p>
+            
+            <div class="card border-0 shadow-sm bg-light p-3 mt-5">
+                <h5 class="text-dark mb-2">📦 Need Help?</h5>
+                <p class="mb-0 text-secondary">If you have any questions about the delivery of your order, please reach out to us at <strong>shipping@mywebsite.com</strong>.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

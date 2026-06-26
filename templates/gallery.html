@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Our Gallery</h2>
+    
+    <div class="row">
+        {% for image in images %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm"> {% if image.image %}
+                    <img src="{{ image.image.url }}" class="card-img-top rounded img-fluid" alt="{{ image.title }}" style="object-fit: cover; height: 250px;">
+                {% endif %}
+                
+                <div class="card-body px-1">
+                    <h5 class="card-title text-center mt-2">{{ image.title }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h2>Our Mission</h2>
+    <p>Lorem ipsum dolor sit amet.</p>
+
+    <h2>Our Vision</h2>
+    <p>Lorem ipsum dolor sit amet.</p>
+
+    <h2>Core Values</h2>
+    <ul>
+        <li>Quality</li>
+        <li>Trust</li>
+        <li>Innovation</li>
+    </ul>
+
+    <hr>
+
+    <h2>Why Choose Us</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <strong>Fast Delivery</strong>
+        </div>
+        <div class="col-md-4">
+            <strong>Premium Quality</strong>
+        </div>
+        <div class="col-md-4">
+            <strong>24x7 Support</strong>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Our Team</h2>
+    <div class="row">
+        {% for member in team %}
+        <div class="col-md-4 mb-4"> <div class="card">
+                {% if member.employee_image %}
+                    <img src="{{ member.employee_image.url }}" class="card-img-top" alt="{{ member.employee_name }}">
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">{{ member.employee_name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ member.role }}</h6>
+                    <p class="card-text">{{ member.description }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

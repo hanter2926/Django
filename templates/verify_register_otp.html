@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card border-0 shadow-sm p-4 bg-light text-center">
+        <h2 class="text-success mb-3">Verify Your Registration</h2>
+        <p class="text-muted">Aapke registered Email/Mobile par ek 6-digit ka OTP bheja gaya hai. Kripya use niche dalein.</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                <input type="text" name="otp" class="form-control form-control-lg text-center" placeholder="X X X X X X" required maxlength="6">
+            </div>
+            <button type="submit" class="btn btn-success w-100 btn-lg">Activate Account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
