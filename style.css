@@ -1,0 +1,137 @@
+/* Background & Base Styling */
+body {
+    background-color: #cbd3dc; /* इमेज के पीछे का बैकग्राउंड शेड */
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.navbar-custom {
+    background-color: #cbd3dc; /* नेवबार को बैकग्राउंड से मैच करने के लिए */
+}
+
+/* Logo Design */
+.logo-box {
+    width: 36px;
+    height: 36px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.logo-text {
+    font-size: 11px;
+    font-weight: bold;
+    color: #1e40af;
+}
+.brand-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 16px;
+}
+
+/* Nav Links */
+.nav-item-link {
+    text-decoration: none;
+    color: #374151;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.nav-item-link:hover {
+    color: #000000;
+}
+
+/* Dashboard Button (Blue Rounded) */
+.btn-dashboard {
+    background-color: #4f46e5;
+    color: white !important;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+}
+.btn-dashboard:hover {
+    background-color: #4338ca;
+}
+
+/* Custom Dropdown Hover Logic (No Select Box) */
+.dropdown-custom {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-menu-custom {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    z-index: 1;
+    top: 100%;
+    margin-top: 5px;
+}
+.dropdown-menu-custom a {
+    color: black;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+}
+.dropdown-menu-custom a:hover {
+    background-color: #f3f4f6;
+    border-radius: 8px;
+}
+.dropdown-custom:hover .dropdown-menu-custom {
+    display: block;
+}
+
+/* Right Side Utilities Buttons */
+.btn-icon-round {
+    width: 38px;
+    height: 38px;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+}
+.btn-icon-round:hover {
+    background-color: #f3f4f6;
+}
+
+/* Night Mode Button (Dark Pill) */
+.btn-night {
+    background-color: #0f172a;
+    color: #ffffff;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    display: flex;
+    align-items: center;
+}
+.btn-night:hover {
+    background-color: #1e293b;
+    color: #ffffff;
+}
+
+/* Profile Avatar */
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    background-color: #6366f1;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    border: 2px solid white;
+}
