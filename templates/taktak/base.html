@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Taktak Store{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'taktak/style.css' %}">
+</head>
+<body>
+    {% if active_announcement %}
+    <div class="announcement">{{ active_announcement.message }}</div>
+    {% endif %}
+    <header class="site-header">
+        <a href="{% url 'home' %}" class="brand-link">
+            <img src="{% static 'taktak/images/banner/tak tak icon.png' %}" alt="Taktak logo" class="logo">
+        </a>
+        <nav class="navbar">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'product_list' %}">Products</a>
+            <a href="{% url 'about_us' %}">About</a>
+            <a href="{% url 'gallery' %}">Gallery</a>
+            <a href="{% url 'sell_product' %}">Sell</a>
+            <a href="{% url 'contact_us' %}">Contact</a>
+            <a href="{% url 'cart' %}">Cart</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}">Profile</a>
+            {% else %}
+            <a href="/admin/">Admin</a>
+            {% endif %}
+            <form class="search-form" method="get" action="{% url 'product_list' %}">
+                <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search products" aria-label="Search products">
+                <button type="submit">Search</button>
+            </form>
+        </nav>
+    </header>
+    {% if request.path != '/' %}
+    <div class="page-banner">
+        <img src="{% static 'taktak/images/banner/back banner.png' %}" alt="Header banner">
+    </div>
+    {% endif %}
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+        <div class="footer-brand">
+            <img src="{% static 'taktak/images/banner/tak tak icon.png' %}" alt="Taktak logo" class="logo footer-logo">
+            <p>Modern essentials for everyday living.</p>
+        </div>
+        <div>
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+                <li><a href="{% url 'refund_policy' %}">Refund Policy</a></li>
+                <li><a href="{% url 'shipping_policy' %}">Shipping Policy</a></li>
+                <li><a href="{% url 'terms_and_conditions' %}">Terms & Conditions</a></li>
+                <li><a href="{% url 'mission' %}">Our Mission</a></li>
+                <li><a href="{% url 'vision' %}">Our Vision</a></li>
+            </ul>
+        </div>
+    </footer>
+</body>
+</html>

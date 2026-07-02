@@ -1,0 +1,38 @@
+{% extends 'taktak/base.html' %}
+{% block title %}About Us | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>About Taktak</h1>
+    <h2>Our Mission</h2>
+    <p>We create thoughtfully designed products that bring ease and style into daily life.</p>
+    <h2>Our Vision</h2>
+    <p>We aim to be a trusted, inspiring brand that blends quality, value, and innovation.</p>
+    <h2>Core Values</h2>
+    <ul>
+        <li>Craftsmanship</li>
+        <li>Integrity</li>
+        <li>Customer delight</li>
+    </ul>
+    <h2>Why Choose Us</h2>
+    <ul>
+        <li>Premium quality materials</li>
+        <li>Fast and reliable delivery</li>
+        <li>Friendly support team</li>
+    </ul>
+</div>
+<div class="section">
+    <h2>Our Team</h2>
+    <div class="grid">
+        {% for member in team_members %}
+        <div class="card">
+            {% if member.employee_image %}<img src="{{ member.employee_image.url }}" alt="{{ member.employee_name }}">{% endif %}
+            <h3>{{ member.employee_name }}</h3>
+            <p><strong>{{ member.role }}</strong></p>
+            <p>{{ member.description }}</p>
+        </div>
+        {% empty %}
+        <p>No team members have been added yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Gallery | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>Gallery</h1>
+    <div class="grid">
+        {% for image in images %}
+        <div class="card">
+            <img src="{{ image.image.url }}" alt="{{ image.title }}">
+            <h3>{{ image.title }}</h3>
+            <p>{{ image.caption }}</p>
+        </div>
+        {% empty %}
+        <p>No gallery images have been uploaded yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

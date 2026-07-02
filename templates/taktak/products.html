@@ -1,0 +1,69 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Products | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>{% if selected_category %}{{ selected_category.name }}{% else %}Our Products{% endif %}</h1>
+    <div class="category-links">
+        <a href="{% url 'product_list' %}" class="btn">All Products</a>
+        {% for category in catalog %}
+        <a href="{% url 'category_products' category.slug %}" class="btn">{{ category.name }}</a>
+        {% endfor %}
+    </div>
+    {% if show_search_results %}
+    <p class="search-summary">Search results for "{{ search_query }}"</p>
+    {% endif %}
+    <div class="grid">
+        {% if show_search_results %}
+            {% if products %}
+                {% for product in products %}
+                <div class="card product-card">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% endif %}
+                    <div class="product-card-content">
+                        <h3>{{ product.name }}</h3>
+                        <p>{{ product.description|truncatechars:120 }}</p>
+                        <p><strong>${{ product.price }}</strong></p>
+                        <p><small>Category: {{ product.category.name }}</small></p>
+                    </div>
+                    <div class="product-card-actions">
+                        <a class="btn" href="{% url 'checkout' %}?category={{ product.category.slug }}&product={{ product.slug }}">Buy Now</a>
+                        <a class="btn secondary" href="{% url 'product_detail' product.slug %}">View Details</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No results found.</p>
+                {% endfor %}
+            {% else %}
+            <p>No results found.</p>
+            {% endif %}
+        {% else %}
+            {% for category in catalog %}
+                {% if selected_category and category.slug != selected_category.slug %}
+                {% else %}
+                    {% for product in category.products %}
+                    <div class="card product-card">
+                        {% if product.images %}
+                        <img src="{{ product.images.0 }}" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="product-card-content">
+                            <h3>{{ product.name }}</h3>
+                            <p>{{ product.description|truncatechars:120 }}</p>
+                            <p><strong>${{ product.price }}</strong></p>
+                        </div>
+                        <div class="product-card-actions">
+                            <a class="btn" href="{% url 'checkout' %}?category={{ category.slug }}&product={{ product.slug }}">Buy Now</a>
+                            <a class="btn secondary" href="{% url 'add_to_cart' category.slug product.slug %}">Add to Cart</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No products available.</p>
+                    {% endfor %}
+                {% endif %}
+            {% empty %}
+            <p>No products available.</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

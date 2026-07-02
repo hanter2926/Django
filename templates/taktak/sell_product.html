@@ -1,0 +1,13 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Sell Product | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>Sell Your Product</h1>
+    <p>List an item for sale by filling out the form below.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn" type="submit">List Product</button>
+    </form>
+</div>
+{% endblock %}

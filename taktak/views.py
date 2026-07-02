@@ -1,238 +1,465 @@
-from django.shortcuts import render, redirect
-from .models import Announcement
-from .models import TeamMember
-from django.contrib import messages
-from django.contrib.auth.models import User
-from .models import UserProfile
-from django.contrib.auth import authenticate, login
-from django.db.models import Q
 import random
+
+import razorpay
+from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.mail import send_mail
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.conf import settings
+from django.utils.text import slugify
+from .catalog import discover_catalog
+from .forms import ContactForm, CustomUserCreationForm, OTPVerificationForm, ProfileUpdateForm, SellProductForm, UserForm
+from .models import Category, ContactMessage, GalleryImage, Order, OrderItem, Product, Review, TeamMember, UserProfile
 
 
+def get_catalog_item(category_slug, product_slug):
+    for category in discover_catalog():
+        if category['slug'] == category_slug:
+            for product in category['products']:
+                if product['slug'] == product_slug:
+                    return category, product
+    return None, None
 
-def about(request):
-
-    team=TeamMember.objects.all()
-
-    context={
-        'team':team
-    }
-
-    return render(request,'about.html',context)
 
 def home(request):
+    catalog = discover_catalog()
+    return render(request, 'taktak/home.html', {'catalog': catalog})
 
-    announcement = Announcement.objects.filter(active=True).first()
 
-    return render(request,
-                  "home.html",
-                  {"announcement": announcement})
+def product_list(request):
+    catalog = discover_catalog()
+    query = request.GET.get('q', '').strip()
 
-from .models import Gallery
+    if query:
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(category__name__icontains=query)
+        ).select_related('category').order_by('-created_at')
+        return render(request, 'taktak/products.html', {
+            'catalog': catalog,
+            'products': products,
+            'search_query': query,
+            'show_search_results': True,
+        })
 
-def gallery(request):
+    return render(request, 'taktak/products.html', {'catalog': catalog})
 
-    images=Gallery.objects.all()
 
-    return render(request,'gallery.html',{'images':images})
+def category_products(request, slug):
+    catalog = discover_catalog()
+    selected_category = None
+    for category in catalog:
+        if category['slug'] == slug:
+            selected_category = category
+            break
+    return render(request, 'taktak/products.html', {'catalog': catalog, 'selected_category': selected_category})
 
-def privacy_policy(request):
-    return render(request, "privacy_policy.html")
 
-def refund_policy(request):
-    return render(request, "refund_policy.html")
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    reviews = product.reviews.select_related('user').all().order_by('-created_at')
+    return render(request, 'taktak/product_detail.html', {'product': product, 'reviews': reviews})
 
-def shipping_policy(request):
-    return render(request, "shipping_policy.html")
 
-def terms_conditions(request):
-    return render(request, "terms_conditions.html")
+def initiate_payment(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST requests are allowed.'}, status=405)
 
-def our_mission(request):
-    return render(request, "our_mission.html")
+    amount = request.POST.get('amount')
+    order_id = request.POST.get('order_id')
+    if not amount or not order_id:
+        return JsonResponse({'error': 'Missing amount or order_id.'}, status=400)
 
-def our_vision(request):
-    return render(request, "our_vision.html")
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    payment_order = client.order.create({
+        'amount': int(float(amount) * 100),
+        'currency': 'INR',
+        'receipt': order_id,
+        'payment_capture': 1,
+    })
 
-def contact(request):
-    return render(request, "contact.html")
+    order = get_object_or_404(Order, id=order_id)
+    order.razorpay_order_id = payment_order['id']
+    order.save(update_fields=['razorpay_order_id'])
 
-import random
-from django.core.mail import send_mail
-from django.conf import settings
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.models import User
-from .models import UserProfile
+    return JsonResponse({
+        'success': True,
+        'order_id': payment_order['id'],
+        'amount': int(float(amount) * 100),
+        'currency': 'INR',
+        'key': settings.RAZORPAY_KEY_ID,
+    })
 
-def register_view(request):
+
+def verify_payment(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST requests are allowed.'}, status=405)
+
+    razorpay_order_id = request.POST.get('razorpay_order_id')
+    razorpay_payment_id = request.POST.get('razorpay_payment_id')
+    razorpay_signature = request.POST.get('razorpay_signature')
+
+    if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+        return JsonResponse({'error': 'Missing payment verification data.'}, status=400)
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    params_dict = {
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_payment_id': razorpay_payment_id,
+        'razorpay_signature': razorpay_signature,
+    }
+
+    try:
+        client.utility.verify_payment_signature(params_dict)
+        order = Order.objects.get(razorpay_order_id=razorpay_order_id)
+        order.razorpay_payment_id = razorpay_payment_id
+        order.razorpay_signature = razorpay_signature
+        order.payment_status = 'Paid'
+        order.status = 'Pending'
+        order.save(update_fields=['razorpay_payment_id', 'razorpay_signature', 'payment_status', 'status'])
+        return JsonResponse({'success': True, 'message': 'Payment verified successfully.'})
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Payment verification failed.'}, status=400)
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
-        u_name = request.POST['username']
-        email = request.POST['email']
-        mobile = request.POST['mobile']
-        pass1 = request.POST['password']
-        
-        if User.objects.filter(username=u_name).exists():
-            messages.error(request, "Username pehle se maujood hai!")
-            return redirect('register')
-        if UserProfile.objects.filter(mobile_number=mobile).exists():
-            messages.error(request, "Mobile Number pehle se registered hai!")
-            return redirect('register')
-            
-        # 1. User ko abhi ke liye Inactive banayein jab tak OTP verify na ho
-        new_user = User.objects.create_user(username=u_name, email=email, password=pass1)
-        new_user.is_active = False 
-        new_user.save()
-        
-        # 2. OTP Generate karein
-        otp = str(random.randint(100000, 999999))
-        
-        profile = UserProfile.objects.create(user=new_user, mobile_number=mobile, otp=otp)
-        profile.save()
-        
-        # 3. SMTP Ke Zariye Asli Email Bhejna
-        try:
-            subject = "Taktak App - Verify Your Account"
-            message = f"Hello {u_name},\n\nAapka registration OTP hai: {otp}\n\nKripya account active karne ke liye ise enter karein."
-            from_email = settings.EMAIL_HOST_USER
-            recipient_list = [email]
-            
-            send_mail(subject, message, from_email, recipient_list)
-            messages.success(request, "Aapke Email par OTP bhej diya gaya hai!")
-        except Exception as e:
-            # Agar SMTP setup nahi hai toh testing ke liye terminal par print hoga
-            print(f"🔥 SMTP ERROR: Mail nahi gaya. TESTING OTP IS: {otp}")
-            messages.warning(request, "Email nahi ja saka, lekin testing OTP terminal par check karein!")
-
-        # 4. REDIRECT: Ab user login par nahi balki OTP page par jayega
-        request.session['register_user_id'] = new_user.id
-        return redirect('verify_register_otp')
-        
-    return render(request, 'register.html')
-
-
-def verify_register_otp(request):
-    user_id = request.session.get('register_user_id')
-    if not user_id:
-        return redirect('register')
-        
-    if request.method == 'POST':
-        entered_otp = request.POST['otp']
-        
-        try:
-            user = User.objects.get(id=user_id)
-            user_profile = UserProfile.objects.get(user=user)
-            
-            if user_profile.otp == entered_otp:
-                user.is_active = True # Account ko active kar diya!
-                user.save()
-                
-                user_profile.otp = None # OTP use ho gaya toh clear kar diya
-                user_profile.save()
-                
-                del request.session['register_user_id']
-                messages.success(request, "Account verify ho gaya! Ab aap login kar sakte hain.")
-                return redirect('login')
-            else:
-                messages.error(request, "Galat OTP! Kripya fir se dekh kar dalein.")
-        except User.DoesNotExist:
-            return redirect('register')
-            
-    return render(request, 'verify_register_otp.html')
-
-def login_view(request):
-    if request.method == 'POST':
-        # `.get()` use karne se KeyError KABHI nahi aayega!
-        login_input = request.POST.get('login_input')
-        pass1 = request.POST.get('password')
-        
-        # AGAR user ke form mein 'login_input' nahi hai, toh purana 'username' pakdo
-        if not login_input:
-            login_input = request.POST.get('username') or request.POST.get('email') or request.POST.get('mobile')
-
-        user = None
-        
-        # 1. Check karein agar input Email hai ya Username hai
-        user_queryset = User.objects.filter(Q(username=login_input) | Q(email=login_input))
-        
-        if user_queryset.exists():
-            user_obj = user_queryset.first()
-            user = authenticate(username=user_obj.username, password=pass1)
-        else:
-            # 2. Check karein agar input Mobile Number hai
-            profile_queryset = UserProfile.objects.filter(mobile_number=login_input)
-            if profile_queryset.exists():
-                user_obj = profile_queryset.first().user
-                user = authenticate(username=user_obj.username, password=pass1)
-                
-        if user is not None:
-            login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!")
-            return redirect('home')
-        else:
-            messages.error(request, "Galat Details! Kripya fir se koshish karein.")
-            
-    return render(request, 'login.html')
-
-def forget_password(request):
-    if request.method == 'POST':
-        login_input = request.POST['login_input']
-        
-        # User dhoodhna unke email, username ya mobile se
-        user_profile = None
-        user_obj = User.objects.filter(Q(username=login_input) | Q(email=login_input)).first()
-        
-        if user_obj:
-            user_profile = UserProfile.objects.filter(user=user_obj).first()
-        else:
-            user_profile = UserProfile.objects.filter(mobile_number=login_input).first()
-            
-        if user_profile:
-            # Live OTP Generate karna (6-digit)
-            otp = str(random.randint(100000, 999999))
-            user_profile.otp = otp
-            user_profile.save()
-            
-            # Aapke terminal par OTP print hoga (Testing ke liye)
-            print(f"🔥 LIVE OTP FOR {user_profile.user.username} IS: {otp}")
-            
-            # Session mein user id save kar rahe hain taaki agle page par use kar sakein
-            request.session['reset_user_id'] = user_profile.user.id
-            messages.success(request, f"OTP generate ho gaya hai! (Terminal check karein: {otp})")
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            otp = f"{random.randint(100000, 999999)}"
+            request.session['signup_data'] = {
+                'username': form.cleaned_data['username'],
+                'email': form.cleaned_data['email'],
+                'phone': form.cleaned_data['phone'],
+                'password': form.cleaned_data['password1'],
+            }
+            request.session['signup_otp'] = otp
+            request.session['signup_email'] = form.cleaned_data['email']
+            send_mail(
+                'Your OTP for Taktak registration',
+                f'Your OTP is {otp}',
+                settings.DEFAULT_FROM_EMAIL,
+                [form.cleaned_data['email']],
+                fail_silently=True,
+            )
+            messages.success(request, 'OTP has been sent to your email. Please verify it to complete registration.')
             return redirect('verify_otp')
-        else:
-            messages.error(request, "Aisa koi user nahi mila!")
-            
-    return render(request, 'forget_password.html')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'taktak/register.html', {'form': form})
 
 
 def verify_otp(request):
-    user_id = request.session.get('reset_user_id')
-    if not user_id:
-        return redirect('forget_password')
-        
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
-        entered_otp = request.POST['otp']
-        new_password = request.POST['new_password']
-        
-        user = User.objects.get(id=user_id)
-        user_profile = UserProfile.objects.get(user=user)
-        
-        if user_profile.otp == entered_otp:
-            # Password badalna
-            user.set_password(new_password)
-            user.save()
-            
-            # OTP khali karna taaki dubara use na ho
-            user_profile.otp = None
-            user_profile.save()
-            
-            del request.session['reset_user_id'] # Session clear
-            messages.success(request, "Password successfully badal gaya hai! Ab login karein.")
-            return redirect('login')
-        else:
-            messages.error(request, "Galat OTP! Kripya sahi OTP dalein.")
-            
-    return render(request, 'verify_otp.html')
+        form = OTPVerificationForm(request.POST)
+        if form.is_valid():
+            otp = form.cleaned_data['otp']
+            if otp == request.session.get('signup_otp'):
+                signup_data = request.session.get('signup_data')
+                if signup_data:
+                    user = get_user_model().objects.create_user(
+                        username=signup_data['username'],
+                        email=signup_data['email'],
+                        password=signup_data['password'],
+                    )
+                    user.save()
+                    user = authenticate(username=signup_data['username'], password=signup_data['password'])
+                    if user is not None:
+                        login(request, user)
+                        request.session.pop('signup_data', None)
+                        request.session.pop('signup_otp', None)
+                        request.session.pop('signup_email', None)
+                        messages.success(request, 'Registration complete! You are now logged in.')
+                        return redirect('home')
+            messages.error(request, 'Invalid OTP. Please try again.')
+    else:
+        form = OTPVerificationForm()
+    return render(request, 'taktak/verify_otp.html', {'form': form})
+
+
+def about_us(request):
+    team_members = TeamMember.objects.all()
+    return render(request, 'taktak/about_us.html', {'team_members': team_members})
+
+
+def gallery(request):
+    images = GalleryImage.objects.all().order_by('-created_at')
+    return render(request, 'taktak/gallery.html', {'images': images})
+
+
+def product_gallery(request):
+    products = Product.objects.select_related('category').all().order_by('-created_at')
+    return render(request, 'taktak/product_gallery.html', {'products': products})
+
+
+def sell_product(request):
+    if request.method == 'POST':
+        form = SellProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            base_slug = slugify(product.name)
+            slug = base_slug
+            counter = 1
+            while Product.objects.filter(slug=slug).exists():
+                slug = f'{base_slug}-{counter}'
+                counter += 1
+            product.slug = slug
+            product.save()
+            messages.success(request, 'Your product has been listed for sale.')
+            return redirect('product_list')
+    else:
+        form = SellProductForm()
+    return render(request, 'taktak/sell_product.html', {'form': form})
+
+
+def contact_us(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your message was sent successfully.')
+            return redirect('contact_us')
+    else:
+        form = ContactForm()
+    return render(request, 'taktak/contact_us.html', {'form': form})
+
+
+@login_required
+def profile(request):
+    profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, 'taktak/profile.html', {'profile': profile_obj})
+
+
+@login_required
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'taktak/my_orders.html', {'orders': orders})
+
+
+@login_required
+def razorpay_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'taktak/razorpay_payment.html', {
+        'order': order,
+        'razorpay_api_key': settings.RAZORPAY_API_KEY,
+        'amount': int(order.total * 100),
+    })
+
+
+@login_required
+def verify_razorpay_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order.payment_status = 'Paid'
+    order.status = 'Pending'
+    order.save(update_fields=['payment_status', 'status'])
+    messages.success(request, 'Razorpay payment completed successfully.')
+    return redirect('my_orders')
+
+
+@login_required
+def submit_review(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    if request.method == 'POST':
+        has_bought = OrderItem.objects.filter(order__user=request.user, order__payment_status='Paid', product=product).exists()
+        if not has_bought:
+            messages.error(request, 'You can only review products you bought.')
+            return redirect('product_detail', slug=product.slug)
+        rating = int(request.POST.get('rating', 5))
+        comment = request.POST.get('comment', '').strip()
+        Review.objects.update_or_create(
+            product=product,
+            user=request.user,
+            defaults={'rating': rating, 'comment': comment},
+        )
+        messages.success(request, 'Your review has been saved.')
+        return redirect('product_detail', slug=product.slug)
+    return redirect('product_detail', slug=product.slug)
+
+
+@login_required
+def edit_profile(request):
+    profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, instance=profile_obj)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile was updated successfully.')
+            return redirect('profile')
+    else:
+        user_form = UserForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=profile_obj)
+    return render(request, 'taktak/edit_profile.html', {'user_form': user_form, 'profile_form': profile_form})
+
+
+def add_to_wishlist(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    wishlist = request.session.get('wishlist', [])
+    if slug not in wishlist:
+        wishlist.append(slug)
+        request.session['wishlist'] = wishlist
+        messages.success(request, f'{product.name} added to wishlist.')
+    return redirect(request.META.get('HTTP_REFERER', reverse('product_list')))
+
+
+def add_to_cart(request, category_slug, product_slug):
+    category, product = get_catalog_item(category_slug, product_slug)
+    if category is None or product is None:
+        messages.error(request, 'The requested product could not be found.')
+        return redirect('product_list')
+
+    cart = request.session.get('cart', [])
+    existing_item = next((item for item in cart if item['category_slug'] == category_slug and item['product_slug'] == product_slug), None)
+    if existing_item:
+        existing_item['quantity'] += 1
+    else:
+        cart.append({
+            'category_slug': category_slug,
+            'product_slug': product_slug,
+            'name': product['name'],
+            'price': float(product['price']),
+            'image_url': product['images'][0] if product['images'] else '',
+            'quantity': 1,
+        })
+    request.session['cart'] = cart
+    messages.success(request, f'{product["name"]} added to cart.')
+    return redirect(request.META.get('HTTP_REFERER', reverse('product_list')))
+
+
+def cart_view(request):
+    cart = request.session.get('cart', [])
+    total = sum(item['price'] * item['quantity'] for item in cart)
+    return render(request, 'taktak/cart.html', {'cart': cart, 'total': total})
+
+
+def checkout(request):
+    if request.method == 'POST':
+        cart = request.session.get('cart', [])
+        if not cart:
+            messages.error(request, 'Your cart is empty.')
+            return redirect('cart')
+
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        payment_method = request.POST.get('payment_method')
+        subtotal = sum(item['price'] * item['quantity'] for item in cart)
+        delivery_charge = 5 if subtotal < 100 else 0
+        tax = round(subtotal * 0.05, 2)
+        total = round(subtotal + delivery_charge + tax, 2)
+        items = ', '.join(f"{item['name']} x{item['quantity']}" for item in cart)
+        order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            customer_name=name,
+            email=request.POST.get('email', 'noreply@example.com'),
+            phone=phone,
+            address=address,
+            city=request.POST.get('city', 'N/A'),
+            total=total,
+            items=items,
+            payment_status='Pending',
+            status='Pending',
+        )
+        for item in cart:
+            OrderItem.objects.create(
+                order=order,
+                product_name=item['name'],
+                product_slug=item.get('product_slug', ''),
+                quantity=item['quantity'],
+                price=item['price'],
+            )
+        request.session['cart'] = []
+        send_mail(
+            'Order confirmation - Taktak',
+            f'Thank you for your purchase. Your order #{order.id} has been placed successfully.',
+            settings.DEFAULT_FROM_EMAIL,
+            [order.email],
+            fail_silently=True,
+        )
+
+        if payment_method == 'razorpay':
+            client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_SECRET))
+            payment_order = client.order.create({
+                'amount': int(total * 100),
+                'currency': 'INR',
+                'receipt': str(order.id),
+                'payment_capture': 1,
+            })
+            order.razorpay_order_id = payment_order['id']
+            order.save()
+
+            context = {
+                'order': order,
+                'razorpay_order_id': payment_order['id'],
+                'razorpay_api_key': settings.RAZORPAY_API_KEY,
+                'amount': int(total * 100),
+            }
+            return render(request, 'taktak/razorpay_payment.html', context)
+
+        else: # For 'cod' or other methods
+            request.session['cart'] = []
+            messages.success(request, 'Order placed successfully.')
+            return redirect('my_orders')
+
+    selected_category_slug = request.GET.get('category')
+    selected_product_slug = request.GET.get('product')
+    cart = request.session.get('cart', [])
+    if selected_category_slug and selected_product_slug:
+        category, product = get_catalog_item(selected_category_slug, selected_product_slug)
+        if category and product:
+            cart = [{
+                'category_slug': selected_category_slug,
+                'product_slug': selected_product_slug,
+                'name': product['name'],
+                'price': float(product['price']),
+                'image_url': product['images'][0] if product['images'] else '',
+                'quantity': 1,
+            }]
+    subtotal = sum(item['price'] * item['quantity'] for item in cart)
+    delivery_charge = 5 if subtotal < 100 else 0
+    tax = round(subtotal * 0.05, 2)
+    total = round(subtotal + delivery_charge + tax, 2)
+    context = {
+        'cart': cart,
+        'subtotal': subtotal,
+        'delivery_charge': delivery_charge,
+        'tax': tax,
+        'total': total,
+        'razorpay_api_key': settings.RAZORPAY_API_KEY
+    }
+    return render(request, 'taktak/checkout.html', context)
+
+
+def privacy_policy(request):
+    return render(request, 'taktak/privacy_policy.html')
+
+
+def refund_policy(request):
+    return render(request, 'taktak/refund_policy.html')
+
+
+def shipping_policy(request):
+    return render(request, 'taktak/shipping_policy.html')
+
+
+def terms_and_conditions(request):
+    return render(request, 'taktak/terms_and_conditions.html')
+
+
+def mission(request):
+    return render(request, 'taktak/mission.html')
+
+
+def vision(request):
+    return render(request, 'taktak/vision.html')

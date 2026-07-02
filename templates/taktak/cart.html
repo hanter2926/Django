@@ -1,0 +1,25 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Cart | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>Your Cart</h1>
+    {% if cart %}
+    <div class="cart-list">
+        {% for item in cart %}
+        <div class="card cart-item">
+            {% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.name }}">{% endif %}
+            <div>
+                <h3>{{ item.name }}</h3>
+                <p>Qty: {{ item.quantity }}</p>
+                <p>${{ item.price }} each</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p><strong>Total:</strong> ${{ total }}</p>
+    <a class="btn" href="{% url 'checkout' %}">Checkout</a>
+    {% else %}
+    <p>Your cart is empty.</p>
+    {% endif %}
+</div>
+{% endblock %}

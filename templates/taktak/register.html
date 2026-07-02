@@ -1,0 +1,12 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Register | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h2>Create an account</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Register</button>
+    </form>
+</div>
+{% endblock %}

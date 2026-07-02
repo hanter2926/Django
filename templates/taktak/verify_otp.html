@@ -1,0 +1,13 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Verify OTP | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h2>Verify your email</h2>
+    <p>Enter the 6-digit OTP sent to your email address.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Verify OTP</button>
+    </form>
+</div>
+{% endblock %}

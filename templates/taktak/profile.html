@@ -1,0 +1,15 @@
+{% extends 'taktak/base.html' %}
+{% block title %}My Profile | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>My Profile</h1>
+    <p><strong>Name:</strong> {{ profile.full_name|default:'-' }}</p>
+    <p><strong>Phone:</strong> {{ profile.phone|default:'-' }}</p>
+    <p><strong>Address:</strong> {{ profile.address|default:'-' }}</p>
+    <p><strong>City:</strong> {{ profile.city|default:'-' }}</p>
+    <p><strong>State:</strong> {{ profile.state|default:'-' }}</p>
+    <p><strong>Pincode:</strong> {{ profile.pincode|default:'-' }}</p>
+    <p><strong>Bio:</strong> {{ profile.bio|default:'-' }}</p>
+    <a class="btn" href="{% url 'edit_profile' %}">Edit Profile</a>
+</div>
+{% endblock %}

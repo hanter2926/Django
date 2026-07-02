@@ -1,0 +1,23 @@
+{% extends 'taktak/base.html' %}
+{% block title %}My Orders | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>My Orders</h1>
+    {% if orders %}
+    {% for order in orders %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>Order #{{ order.id }}</h5>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Payment:</strong> {{ order.payment_status }}</p>
+            <p><strong>Address:</strong> {{ order.address }}, {{ order.city }}</p>
+            <p><strong>Total:</strong> ${{ order.total }}</p>
+            <p><strong>Items:</strong> {{ order.items }}</p>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>You have no orders yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

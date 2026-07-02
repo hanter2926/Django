@@ -1,0 +1,43 @@
+{% extends 'taktak/base.html' %}
+{% block title %}{{ product.name }} | Taktak{% endblock %}
+{% block content %}
+<div class="section">
+    <h1>{{ product.name }}</h1>
+    <p><strong>Category:</strong> {{ product.category.name }}</p>
+    <p>{{ product.description }}</p>
+    <p><strong>Price:</strong> ${{ product.price }}</p>
+    <p><strong>In stock:</strong> {{ product.stock }}</p>
+    <a class="btn" href="{% url 'add_to_cart' product.slug %}">Add to cart</a>
+    <a class="btn" href="{% url 'add_to_wishlist' product.slug %}">Add to wishlist</a>
+
+    <hr>
+    <h3>Reviews</h3>
+    {% for review in reviews %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <strong>{{ review.user.username }}</strong> - {{ review.rating }} / 5
+            <p>{{ review.comment }}</p>
+        </div>
+    </div>
+    {% empty %}
+    <p>No reviews yet.</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+    <hr>
+    <h4>Leave a Review</h4>
+    <form method="post" action="{% url 'submit_review' product.slug %}">
+        {% csrf_token %}
+        <select name="rating" class="form-control mb-2">
+            <option value="5">5 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="2">2 Stars</option>
+            <option value="1">1 Star</option>
+        </select>
+        <textarea name="comment" class="form-control mb-2" placeholder="Write your review"></textarea>
+        <button class="btn" type="submit">Submit Review</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

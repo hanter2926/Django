@@ -1,0 +1,52 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Complete Payment | Taktak{% endblock %}
+
+{% block content %}
+<div class="section">
+    <h1>Processing Your Payment</h1>
+    <p>Please wait while we securely process your payment with Razorpay.</p>
+    <p>Your order ID is: {{ order.id }}</p>
+    <p>Total Amount: ₹{{ order.total }}</p>
+
+    <!-- This button is hidden but will be "clicked" by the script -->
+    <button id="rzp-button1" style="display:none;">Pay with Razorpay</button>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var options = {
+        "key": "{{ razorpay_api_key }}",
+        "amount": "{{ amount }}",
+        "currency": "INR",
+        "name": "Taktak",
+        "description": "Order Payment for Order #{{ order.id }}",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response){
+            // On successful payment, redirect to a verification URL
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'verify_payment' %}"; // URL to verify payment
+
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            form.appendChild(csrfInput);
+
+            for (var key in response) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = response[key];
+                form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+});
+</script>
+{% endblock %}

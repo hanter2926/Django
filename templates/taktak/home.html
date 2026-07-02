@@ -1,0 +1,29 @@
+{% extends 'taktak/base.html' %}
+{% load static %}
+{% block title %}Home | Taktak{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>Welcome to Taktak</h1>
+    <p>Discover curated products, a memorable brand experience, and a fast, friendly shopping journey.</p>
+    <a class="btn" href="{% url 'product_list' %}">Shop now</a>
+</div>
+<div class="banner-grid">
+    <img src="{% static 'taktak/images/banner/tak tak icon.png' %}" alt="Fresh arrivals banner">
+    <img src="{% static 'taktak/images/banner/product background.png' %}" alt="Limited edition banner">
+    <img src="{% static 'taktak/images/banner/back banner.png' %}" alt="Style that lasts banner">
+</div>
+<div class="section">
+    <h2>Browse Categories</h2>
+    <div class="grid">
+        {% for category in catalog %}
+        <div class="card">
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.products|length }} product{% if category.products|length != 1 %}s{% endif %} available</p>
+            <a class="btn" href="{% url 'category_products' category.slug %}">View products</a>
+        </div>
+        {% empty %}
+        <p>No categories yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'taktak/base.html' %}
+{% block title %}Checkout | Taktak{% endblock %}
+{% block content %}
+<div class="section checkout-layout">
+    <div>
+        <h1>Checkout</h1>
+        <form method="post" id="checkout-form">
+            {% csrf_token %}
+            <input name="name" placeholder="Full name" required>
+            <input name="email" type="email" placeholder="Email" required>
+            <input name="phone" placeholder="Phone" required>
+            <textarea name="address" placeholder="Address" required></textarea>
+            <input name="city" placeholder="City" required>
+            <select name="payment_method" id="payment-method">
+                <option value="cod">Cash on Delivery</option>
+                <option value="card">Card Payment</option>
+                <option value="razorpay">Razorpay</option>
+            </select>
+            <button class="btn" type="submit" id="place-order-btn">Place Order</button>
+        </form>
+    </div>
+    <div class="card summary-card">
+        <h3>Order Summary</h3>
+        {% for item in cart %}
+        <div class="summary-item">
+            <span>{{ item.name }} x {{ item.quantity }}</span>
+            <span>${{ item.price }}</span>
+        </div>
+        {% empty %}
+        <p>Your cart is empty.</p>
+        {% endfor %}
+        {% if razorpay_api_key %}<p>Razorpay is configured for later popup checkout.</p>{% endif %}
+    </div>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    const form = document.getElementById('checkout-form');
+    const paymentMethod = document.getElementById('payment-method');
+
+    form.addEventListener('submit', function (event) {
+        if (paymentMethod.value !== 'razorpay') {
+            return;
+        }
+
+        event.preventDefault();
+
+        const options = {
+            key: '{{ razorpay_api_key }}',
+            amount: '{{ amount }}',
+            currency: 'INR',
+            name: 'Taktak',
+            description: 'Order Payment',
+            order_id: '{{ razorpay_order_id }}',
+            handler: function (response) {
+                const hiddenInputs = [
+                    ['razorpay_payment_id', response.razorpay_payment_id],
+                    ['razorpay_order_id', response.razorpay_order_id],
+                    ['razorpay_signature', response.razorpay_signature],
+                ];
+
+                hiddenInputs.forEach(([name, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+
+                form.submit();
+            },
+            prefill: {
+                name: form.elements.name.value,
+                email: form.elements.email.value,
+                contact: form.elements.phone.value,
+            },
+            theme: {
+                color: '#f59e0b'
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    });
+</script>
+{% endblock %}
