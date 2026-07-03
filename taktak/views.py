@@ -1,18 +1,20 @@
 import random
 
 import razorpay
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.text import slugify
 from .catalog import discover_catalog
 from .forms import ContactForm, CustomUserCreationForm, OTPVerificationForm, ProfileUpdateForm, SellProductForm, UserForm
-from .models import Category, ContactMessage, GalleryImage, Order, OrderItem, Product, Review, TeamMember, UserProfile
+from .models import Category, ContactMessage, GalleryImage, Order, OrderItem, Product, Review, TeamMember, UserProfile, SellerProfile
+from .utils import find_and_assign_seller
 
 
 def get_catalog_item(category_slug, product_slug):
@@ -126,7 +128,7 @@ def verify_payment(request):
         return JsonResponse({'success': False, 'message': 'Payment verification failed.'}, status=400)
 
 
-def register(request):
+def signup_view(request):
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -156,7 +158,7 @@ def register(request):
     return render(request, 'taktak/register.html', {'form': form})
 
 
-def verify_otp(request):
+def verify_otp_and_register(request):
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -179,6 +181,20 @@ def verify_otp(request):
                         request.session.pop('signup_data', None)
                         request.session.pop('signup_otp', None)
                         request.session.pop('signup_email', None)
+
+                        # Send Welcome Email
+                        subject = 'Welcome to Taktak!'
+                        html_message = render_to_string(
+                            'taktak/emails/welcome_email.html',
+                            {'username': user.username}
+                        )
+                        send_mail(
+                            subject,
+                            '', # Plain text message (optional)
+                            settings.DEFAULT_FROM_EMAIL,
+                            [user.email],
+                            fail_silently=False,
+                            html_message=html_message)
                         messages.success(request, 'Registration complete! You are now logged in.')
                         return redirect('home')
             messages.error(request, 'Invalid OTP. Please try again.')
@@ -186,6 +202,32 @@ def verify_otp(request):
         form = OTPVerificationForm()
     return render(request, 'taktak/verify_otp.html', {'form': form})
 
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('profile')
+
+    if request.method == 'POST':
+        from django.contrib.auth.forms import AuthenticationForm
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}.")
+                return redirect('profile')
+            else:
+                messages.error(request,"Invalid username or password.")
+    form = AuthenticationForm()
+    return render(request, 'taktak/login.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, "You have successfully logged out.")
+    return redirect('home')
 
 def about_us(request):
     team_members = TeamMember.objects.all()
@@ -235,7 +277,7 @@ def contact_us(request):
 
 
 @login_required
-def profile(request):
+def profile_view(request):
     profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
     return render(request, 'taktak/profile.html', {'profile': profile_obj})
 
@@ -287,7 +329,7 @@ def submit_review(request, slug):
 
 
 @login_required
-def edit_profile(request):
+def edit_profile_view(request):
     profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=request.user)
@@ -296,12 +338,37 @@ def edit_profile(request):
             user_form.save()
             profile_form.save()
             messages.success(request, 'Your profile was updated successfully.')
-            return redirect('profile')
+            return redirect('profile_view')
     else:
         user_form = UserForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=profile_obj)
     return render(request, 'taktak/edit_profile.html', {'user_form': user_form, 'profile_form': profile_form})
 
+
+@login_required
+def reject_or_switch_order(request, order_id):
+    """
+    Allows an assigned seller to reject an order, triggering a switch to the next
+    closest seller.
+    """
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Ensure the logged-in user is the assigned seller
+    try:
+        seller_profile = request.user.seller_profile
+        if order.assigned_seller != seller_profile:
+            messages.error(request, "You are not authorized to reject this order.")
+            return redirect('home') # Or a seller dashboard
+    except SellerProfile.DoesNotExist:
+        messages.error(request, "You are not a seller.")
+        return redirect('home')
+
+    # Add the current seller to the rejected list and find the next one
+    order.rejected_by_sellers.add(seller_profile)
+    order.status = 'Switched'
+    find_and_assign_seller(order) # This will find the next closest seller
+    messages.success(request, f"Order {order.id} has been passed to the next available seller.")
+    return redirect('home') # Or a seller dashboard
 
 def add_to_wishlist(request, slug):
     product = get_object_or_404(Product, slug=slug)
@@ -344,99 +411,112 @@ def cart_view(request):
 
 
 def checkout(request):
-    if request.method == 'POST':
-        cart = request.session.get('cart', [])
-        if not cart:
-            messages.error(request, 'Your cart is empty.')
-            return redirect('cart')
-
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
-        address = request.POST.get('address')
-        payment_method = request.POST.get('payment_method')
-        subtotal = sum(item['price'] * item['quantity'] for item in cart)
-        delivery_charge = 5 if subtotal < 100 else 0
-        tax = round(subtotal * 0.05, 2)
-        total = round(subtotal + delivery_charge + tax, 2)
-        items = ', '.join(f"{item['name']} x{item['quantity']}" for item in cart)
-        order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            customer_name=name,
-            email=request.POST.get('email', 'noreply@example.com'),
-            phone=phone,
-            address=address,
-            city=request.POST.get('city', 'N/A'),
-            total=total,
-            items=items,
-            payment_status='Pending',
-            status='Pending',
-        )
-        for item in cart:
-            OrderItem.objects.create(
-                order=order,
-                product_name=item['name'],
-                product_slug=item.get('product_slug', ''),
-                quantity=item['quantity'],
-                price=item['price'],
-            )
-        request.session['cart'] = []
-        send_mail(
-            'Order confirmation - Taktak',
-            f'Thank you for your purchase. Your order #{order.id} has been placed successfully.',
-            settings.DEFAULT_FROM_EMAIL,
-            [order.email],
-            fail_silently=True,
-        )
-
-        if payment_method == 'razorpay':
-            client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_SECRET))
-            payment_order = client.order.create({
-                'amount': int(total * 100),
-                'currency': 'INR',
-                'receipt': str(order.id),
-                'payment_capture': 1,
-            })
-            order.razorpay_order_id = payment_order['id']
-            order.save()
-
-            context = {
-                'order': order,
-                'razorpay_order_id': payment_order['id'],
-                'razorpay_api_key': settings.RAZORPAY_API_KEY,
-                'amount': int(total * 100),
-            }
-            return render(request, 'taktak/razorpay_payment.html', context)
-
-        else: # For 'cod' or other methods
-            request.session['cart'] = []
-            messages.success(request, 'Order placed successfully.')
-            return redirect('my_orders')
-
-    selected_category_slug = request.GET.get('category')
-    selected_product_slug = request.GET.get('product')
     cart = request.session.get('cart', [])
-    if selected_category_slug and selected_product_slug:
-        category, product = get_catalog_item(selected_category_slug, selected_product_slug)
-        if category and product:
-            cart = [{
-                'category_slug': selected_category_slug,
-                'product_slug': selected_product_slug,
-                'name': product['name'],
-                'price': float(product['price']),
-                'image_url': product['images'][0] if product['images'] else '',
-                'quantity': 1,
-            }]
+    if not cart:
+        messages.error(request, 'Your cart is empty.')
+        return redirect('cart_view')
+
     subtotal = sum(item['price'] * item['quantity'] for item in cart)
     delivery_charge = 5 if subtotal < 100 else 0
     tax = round(subtotal * 0.05, 2)
     total = round(subtotal + delivery_charge + tax, 2)
+    amount_in_cents = int(total * 100)
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        payment_method = request.POST.get('payment_method')
+
+        if not all([name, email, phone, address, city, payment_method]):
+            messages.error(request, 'Please fill out all required fields.')
+            return redirect('checkout')
+
+        items_summary = ', '.join(f"{item['name']} x{item['quantity']}" for item in cart)
+
+        order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            customer_name=name,
+            email=email,
+            phone=phone,
+            address=address,
+            city=city,
+            total=total,
+            items=items_summary,
+            payment_method=payment_method,
+            payment_status='Pending',
+            status='Pending',
+        )
+
+        for item in cart:
+            product_slug = item.get('product_slug', '')
+            product_instance = None
+            if product_slug:
+                try:
+                    product_instance = Product.objects.get(slug=product_slug)
+                except Product.DoesNotExist:
+                    pass  # Or handle the case where the product is not in the DB
+
+            OrderItem.objects.create(
+                order=order,
+                product=product_instance,
+                product_name=item['name'],
+                product_slug=product_slug,
+                quantity=item['quantity'],
+                price=item['price'],
+            )
+
+        if payment_method == 'razorpay':
+            try:
+                client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_SECRET))
+                payment_order = client.order.create({
+                    'amount': amount_in_cents,
+                    'currency': 'INR',
+                    'receipt': str(order.id),
+                    'payment_capture': 1,
+                })
+                order.razorpay_order_id = payment_order['id']
+                order.save()
+
+                request.session['cart'] = []
+                messages.success(request, 'Your order has been placed. Please complete the payment.')
+                
+                context = {
+                    'order': order,
+                    'razorpay_order_id': payment_order['id'],
+                    'razorpay_api_key': settings.RAZORPAY_API_KEY,
+                    'amount': amount_in_cents,
+                }
+                return render(request, 'taktak/razorpay_payment.html', context)
+            except Exception as e:
+                messages.error(request, f"Could not initiate Razorpay payment. Error: {e}")
+                order.delete() # Rollback order creation
+                return redirect('checkout')
+
+        elif payment_method == 'cod':
+            request.session['cart'] = []
+            send_mail(
+                'Order confirmation - Taktak',
+                f'Thank you for your purchase. Your order #{order.id} has been placed successfully.',
+                settings.DEFAULT_FROM_EMAIL,
+                [order.email],
+                fail_silently=True,
+            )
+            messages.success(request, 'Order placed successfully.')
+            return redirect('my_orders')
+
+    # GET request handling
     context = {
         'cart': cart,
         'subtotal': subtotal,
         'delivery_charge': delivery_charge,
         'tax': tax,
         'total': total,
-        'razorpay_api_key': settings.RAZORPAY_API_KEY
+        'razorpay_api_key': settings.RAZORPAY_API_KEY,
+        'amount': amount_in_cents,
+        'razorpay_order_id': None, # Not created on GET
     }
     return render(request, 'taktak/checkout.html', context)
 

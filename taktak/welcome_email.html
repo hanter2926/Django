@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to Taktak!</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #333;">Welcome to Taktak, {{ username }}!</h2>
+        <p>
+            Thank you for creating an account with us. We're excited to have you as part of our community.
+        </p>
+        <p>
+            At Taktak, you can discover amazing products and enjoy a seamless shopping experience.
+        </p>
+        <p>
+            <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'product_list' %}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Start Shopping</a>
+        </p>
+        <p>
+            Happy shopping!
+        </p>
+        <p><em>The Taktak Team</em></p>
+    </div>
+</body>
+</html>

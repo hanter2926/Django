@@ -7,7 +7,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'taktak/style.css' %}">
 </head>
-<body>
+<body class="auto">
     {% if active_announcement %}
     <div class="announcement">{{ active_announcement.message }}</div>
     {% endif %}
