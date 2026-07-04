@@ -50,11 +50,22 @@ def discover_catalog(root: Path | str | None = None) -> List[Dict]:
                 'folder': str(product_dir),
             })
 
+        category_card_image = None
+        for image_path in sorted(category_dir.rglob('*')):
+            if image_path.is_file() and image_path.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.jfif', '.avif'}:
+                relative_path = Path('taktak/images/Category') / image_path.relative_to(base_root)
+                category_card_image = static(relative_path.as_posix())
+                break
+
+        if not category_card_image and products:
+            category_card_image = products[0]['images'][0] if products[0]['images'] else None
+
         categories.append({
             'name': category_dir.name,
             'slug': slugify(category_dir.name),
             'products': products,
             'folder': str(category_dir),
+            'card_image': category_card_image,
         })
 
     return categories

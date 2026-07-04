@@ -30,6 +30,8 @@ body { margin:0; background:#f8fafc; color:#111827; }
   justify-content:center;
   margin-left:auto;
   margin-right:auto;
+  font-family: cursive;
+  
 }
 .navbar a, .footer a { color:var(--primary); text-decoration:none; }
 .search-form { display:flex; gap:8px; align-items:center; }
@@ -100,3 +102,6 @@ form { display:grid; gap:12px; max-width:480px; }
 input, textarea, select { padding:10px; border:1px solid #cbd5e1; border-radius:8px; }
 img { max-width:100%; border-radius:8px; }
 .footer-logo { width:120px; }
+ .navbar:hover{background-color: aqua; color: #f59e0b;}
+
+ .auto{width: auto;}

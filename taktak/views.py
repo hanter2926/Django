@@ -1,4 +1,5 @@
 import random
+from datetime import timedelta
 
 import razorpay
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -6,15 +7,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.utils import timezone
 from django.utils.text import slugify
 from .catalog import discover_catalog
 from .forms import ContactForm, CustomUserCreationForm, OTPVerificationForm, ProfileUpdateForm, SellProductForm, UserForm
-from .models import Category, ContactMessage, GalleryImage, Order, OrderItem, Product, Review, TeamMember, UserProfile, SellerProfile
-from .utils import find_and_assign_seller
+from .models import Category, ContactMessage, GalleryImage, Order, OrderItem, Product, Review, SystemLog, StockHistoryLog, TeamMember, UserProfile
 
 
 def get_catalog_item(category_slug, product_slug):
@@ -76,7 +78,7 @@ def initiate_payment(request):
     if not amount or not order_id:
         return JsonResponse({'error': 'Missing amount or order_id.'}, status=400)
 
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_SECRET))
     payment_order = client.order.create({
         'amount': int(float(amount) * 100),
         'currency': 'INR',
@@ -93,7 +95,7 @@ def initiate_payment(request):
         'order_id': payment_order['id'],
         'amount': int(float(amount) * 100),
         'currency': 'INR',
-        'key': settings.RAZORPAY_KEY_ID,
+        'key': settings.RAZORPAY_API_KEY,
     })
 
 
@@ -108,7 +110,7 @@ def verify_payment(request):
     if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
         return JsonResponse({'error': 'Missing payment verification data.'}, status=400)
 
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_SECRET))
     params_dict = {
         'razorpay_order_id': razorpay_order_id,
         'razorpay_payment_id': razorpay_payment_id,
@@ -175,6 +177,7 @@ def verify_otp_and_register(request):
                         password=signup_data['password'],
                     )
                     user.save()
+                    UserProfile.objects.create(user=user)
                     user = authenticate(username=signup_data['username'], password=signup_data['password'])
                     if user is not None:
                         login(request, user)
@@ -216,6 +219,7 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
+                UserProfile.objects.get_or_create(user=user)
                 messages.info(request, f"You are now logged in as {username}.")
                 return redirect('profile')
             else:
@@ -352,23 +356,8 @@ def reject_or_switch_order(request, order_id):
     closest seller.
     """
     order = get_object_or_404(Order, id=order_id)
-    
-    # Ensure the logged-in user is the assigned seller
-    try:
-        seller_profile = request.user.seller_profile
-        if order.assigned_seller != seller_profile:
-            messages.error(request, "You are not authorized to reject this order.")
-            return redirect('home') # Or a seller dashboard
-    except SellerProfile.DoesNotExist:
-        messages.error(request, "You are not a seller.")
-        return redirect('home')
-
-    # Add the current seller to the rejected list and find the next one
-    order.rejected_by_sellers.add(seller_profile)
-    order.status = 'Switched'
-    find_and_assign_seller(order) # This will find the next closest seller
-    messages.success(request, f"Order {order.id} has been passed to the next available seller.")
-    return redirect('home') # Or a seller dashboard
+    messages.error(request, "Seller rejection flow is currently unavailable.")
+    return redirect('home')
 
 def add_to_wishlist(request, slug):
     product = get_object_or_404(Product, slug=slug)
@@ -386,55 +375,130 @@ def add_to_cart(request, category_slug, product_slug):
         messages.error(request, 'The requested product could not be found.')
         return redirect('product_list')
 
+    db_product = get_object_or_404(Product, slug=product_slug)
+    if db_product.is_out_of_stock:
+        messages.error(request, 'This product is currently out of stock.')
+        return redirect(request.META.get('HTTP_REFERER', reverse('product_list')))
+
     cart = request.session.get('cart', [])
-    existing_item = next((item for item in cart if item['category_slug'] == category_slug and item['product_slug'] == product_slug), None)
+    existing_item = next((item for item in cart if item['product_slug'] == product_slug), None)
+
+    item_data = {
+        'category_slug': category_slug,
+        'product_slug': product_slug,
+        'name': db_product.name,
+        'original_price': float(db_product.original_price),
+        'price': float(db_product.discounted_price),
+        'discount_percentage': db_product.discount_percentage,
+        'savings': float(db_product.savings_amount),
+        'image_url': db_product.display_image_url,
+        'quantity': 1,
+        'sku_number': db_product.sku_number,
+        'stock': db_product.stock,
+    }
+
     if existing_item:
-        existing_item['quantity'] += 1
+        if existing_item['quantity'] < db_product.stock:
+            existing_item['quantity'] += 1
+        else:
+            messages.error(request, 'You have reached the maximum available stock for this product.')
+            return redirect(request.META.get('HTTP_REFERER', reverse('product_list')))
     else:
-        cart.append({
-            'category_slug': category_slug,
-            'product_slug': product_slug,
-            'name': product['name'],
-            'price': float(product['price']),
-            'image_url': product['images'][0] if product['images'] else '',
-            'quantity': 1,
-        })
+        cart.append(item_data)
+
     request.session['cart'] = cart
-    messages.success(request, f'{product["name"]} added to cart.')
+    messages.success(request, f'{db_product.name} added to cart.')
     return redirect(request.META.get('HTTP_REFERER', reverse('product_list')))
 
 
 def cart_view(request):
     cart = request.session.get('cart', [])
     total = sum(item['price'] * item['quantity'] for item in cart)
-    return render(request, 'taktak/cart.html', {'cart': cart, 'total': total})
+    subtotal = sum(item.get('original_price', item['price']) * item['quantity'] for item in cart)
+    return render(request, 'taktak/cart.html', {'cart': cart, 'total': total, 'subtotal': subtotal})
 
 
 def checkout(request):
     cart = request.session.get('cart', [])
     if not cart:
         messages.error(request, 'Your cart is empty.')
-        return redirect('cart_view')
+        return redirect('cart')
 
     subtotal = sum(item['price'] * item['quantity'] for item in cart)
     delivery_charge = 5 if subtotal < 100 else 0
     tax = round(subtotal * 0.05, 2)
     total = round(subtotal + delivery_charge + tax, 2)
     amount_in_cents = int(total * 100)
+    default_delivery_date = (timezone.now().date() + timedelta(days=5)).isoformat()
+    out_of_stock_items = [item for item in cart if item.get('stock', 1) == 0]
+    has_out_of_stock = bool(out_of_stock_items)
 
     if request.method == 'POST':
+        if has_out_of_stock:
+            messages.error(request, 'One or more items in your cart are out of stock and cannot be ordered.')
+            return render(request, 'taktak/checkout.html', {
+                'cart': cart,
+                'subtotal': subtotal,
+                'delivery_charge': delivery_charge,
+                'tax': tax,
+                'total': total,
+                'default_delivery_date': default_delivery_date,
+                'razorpay_api_key': settings.RAZORPAY_API_KEY,
+                'amount': amount_in_cents,
+                'razorpay_order_id': None,
+                'out_of_stock_items': out_of_stock_items,
+                'has_out_of_stock': has_out_of_stock,
+            })
+
         name = request.POST.get('name')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         address = request.POST.get('address')
         city = request.POST.get('city')
         payment_method = request.POST.get('payment_method')
+        delivery_date = request.POST.get('delivery_date')
+        delivery_location = request.POST.get('delivery_location')
 
         if not all([name, email, phone, address, city, payment_method]):
             messages.error(request, 'Please fill out all required fields.')
             return redirect('checkout')
 
         items_summary = ', '.join(f"{item['name']} x{item['quantity']}" for item in cart)
+
+        insufficient_items = []
+        validated_items = []
+        for item in cart:
+            product_slug = item.get('product_slug', '')
+            if not product_slug:
+                insufficient_items.append(item['name'])
+                continue
+
+            try:
+                product_instance = Product.objects.get(slug=product_slug)
+            except Product.DoesNotExist:
+                product_instance = None
+
+            if not product_instance or product_instance.stock < item['quantity']:
+                insufficient_items.append(item['name'])
+                continue
+
+            validated_items.append((item, product_instance))
+
+        if insufficient_items:
+            messages.error(request, 'One or more cart items are no longer available in the requested quantity.')
+            return render(request, 'taktak/checkout.html', {
+                'cart': cart,
+                'subtotal': subtotal,
+                'delivery_charge': delivery_charge,
+                'tax': tax,
+                'total': total,
+                'default_delivery_date': default_delivery_date,
+                'razorpay_api_key': settings.RAZORPAY_API_KEY,
+                'amount': amount_in_cents,
+                'razorpay_order_id': None,
+                'out_of_stock_items': out_of_stock_items,
+                'has_out_of_stock': has_out_of_stock,
+            })
 
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
@@ -448,25 +512,42 @@ def checkout(request):
             payment_method=payment_method,
             payment_status='Pending',
             status='Pending',
+            delivery_location=delivery_location or address,
+            delivery_date=delivery_date or timezone.now().date() + timedelta(days=5),
         )
 
-        for item in cart:
-            product_slug = item.get('product_slug', '')
-            product_instance = None
-            if product_slug:
-                try:
-                    product_instance = Product.objects.get(slug=product_slug)
-                except Product.DoesNotExist:
-                    pass  # Or handle the case where the product is not in the DB
-
+        for item, product_instance in validated_items:
             OrderItem.objects.create(
                 order=order,
                 product=product_instance,
                 product_name=item['name'],
-                product_slug=product_slug,
+                product_slug=item['product_slug'],
                 quantity=item['quantity'],
                 price=item['price'],
             )
+
+        SystemLog.objects.create(
+            order=order,
+            event_type='Order created',
+            details=f'Order created with {len(validated_items)} item(s). Subtotal: {subtotal:.2f}, Total: {total:.2f}.',
+            created_by=request.user if request.user.is_authenticated else None,
+        )
+
+        for item, product_instance in validated_items:
+            original_stock, new_stock = product_instance.adjust_stock(-item['quantity'], user=request.user if request.user.is_authenticated else None, note='Order placed and stock decremented.')
+            SystemLog.objects.create(
+                order=order,
+                event_type='Stock updated',
+                details=f'Stock for {product_instance.name} decreased from {original_stock} to {new_stock}.',
+                created_by=request.user if request.user.is_authenticated else None,
+            )
+            if new_stock <= product_instance.low_stock_threshold:
+                SystemLog.objects.create(
+                    order=order,
+                    event_type='Critical stock alert',
+                    details=f'{product_instance.name} stock reached {new_stock}, below threshold {product_instance.low_stock_threshold}.',
+                    created_by=request.user if request.user.is_authenticated else None,
+                )
 
         if payment_method == 'razorpay':
             try:
@@ -478,11 +559,11 @@ def checkout(request):
                     'payment_capture': 1,
                 })
                 order.razorpay_order_id = payment_order['id']
-                order.save()
+                order.save(update_fields=['razorpay_order_id'])
 
                 request.session['cart'] = []
                 messages.success(request, 'Your order has been placed. Please complete the payment.')
-                
+
                 context = {
                     'order': order,
                     'razorpay_order_id': payment_order['id'],
@@ -491,34 +572,84 @@ def checkout(request):
                 }
                 return render(request, 'taktak/razorpay_payment.html', context)
             except Exception as e:
-                messages.error(request, f"Could not initiate Razorpay payment. Error: {e}")
-                order.delete() # Rollback order creation
+                messages.error(request, f'Could not initiate Razorpay payment. Error: {e}')
+                order.delete()
                 return redirect('checkout')
 
-        elif payment_method == 'cod':
-            request.session['cart'] = []
-            send_mail(
-                'Order confirmation - Taktak',
-                f'Thank you for your purchase. Your order #{order.id} has been placed successfully.',
-                settings.DEFAULT_FROM_EMAIL,
-                [order.email],
-                fail_silently=True,
-            )
-            messages.success(request, 'Order placed successfully.')
-            return redirect('my_orders')
+        request.session['cart'] = []
+        send_mail(
+            'Order confirmation - Taktak',
+            f'Thank you for your purchase. Your order #{order.id} has been placed successfully.',
+            settings.DEFAULT_FROM_EMAIL,
+            [order.email],
+            fail_silently=True,
+        )
+        messages.success(request, 'Order placed successfully.')
+        return redirect('my_orders')
 
-    # GET request handling
     context = {
         'cart': cart,
         'subtotal': subtotal,
         'delivery_charge': delivery_charge,
         'tax': tax,
         'total': total,
+        'default_delivery_date': default_delivery_date,
         'razorpay_api_key': settings.RAZORPAY_API_KEY,
         'amount': amount_in_cents,
-        'razorpay_order_id': None, # Not created on GET
+        'razorpay_order_id': None,
+        'out_of_stock_items': out_of_stock_items,
+        'has_out_of_stock': has_out_of_stock,
     }
     return render(request, 'taktak/checkout.html', context)
+
+
+@login_required
+def order_tracking(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if request.method == 'POST':
+        if 'change_date' in request.POST:
+            requested_date = request.POST.get('requested_delivery_date')
+            if requested_date:
+                order.date_change_requested = True
+                order.requested_delivery_date = requested_date
+                order.save(update_fields=['date_change_requested', 'requested_delivery_date'])
+                SystemLog.objects.create(
+                    order=order,
+                    event_type='Delivery date change requested',
+                    details=f'User requested new delivery date: {requested_date}.',
+                    created_by=request.user,
+                )
+                messages.success(request, 'Your delivery date change request has been submitted.')
+                return redirect('order_tracking', order_id=order.id)
+
+        if 'change_location' in request.POST:
+            requested_location = request.POST.get('requested_delivery_location')
+            if requested_location:
+                order.location_change_requested = True
+                order.requested_delivery_location = requested_location
+                order.save(update_fields=['location_change_requested', 'requested_delivery_location'])
+                SystemLog.objects.create(
+                    order=order,
+                    event_type='Delivery location change requested',
+                    details=f'User requested new delivery location: {requested_location}.',
+                    created_by=request.user,
+                )
+                messages.success(request, 'Your delivery reroute request has been submitted.')
+                return redirect('order_tracking', order_id=order.id)
+
+    arrival_date = order.delivery_date
+    progress = ['Processed', 'Transit', 'Delivered']
+    current_step = progress.index(order.tracking_state) if order.tracking_state in progress else 0
+
+    context = {
+        'order': order,
+        'arrival_date': arrival_date,
+        'progress': progress,
+        'current_step': current_step,
+        'progress_percent': ((current_step + 1) / len(progress)) * 100,
+    }
+    return render(request, 'taktak/order_tracking.html', context)
 
 
 def privacy_policy(request):
