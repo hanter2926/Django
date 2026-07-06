@@ -1,0 +1,35 @@
+{
+  "info": {
+    "name": "E-Learning API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {"raw": "http://127.0.0.1:8000/api/auth/register/", "host": ["http://127.0.0.1:8000"], "path": ["api","auth","register",""]},
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"inst\",\n  \"password\": \"pass\",\n  \"role\": \"instructor\"\n}"}
+      }
+    },
+    {
+      "name": "Get Token",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {"raw": "http://127.0.0.1:8000/api/auth/token/", "host": ["http://127.0.0.1:8000"], "path": ["api","auth","token",""]},
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"inst\",\n  \"password\": \"pass\"\n}"}
+      }
+    },
+    {
+      "name": "Create Course (auth)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}, {"key":"Authorization","value":"Token {{token}}"}],
+        "url": {"raw": "http://127.0.0.1:8000/api/courses/", "host": ["http://127.0.0.1:8000"], "path": ["api","courses",""]},
+        "body": {"mode": "raw", "raw": "{\n  \"title\": \"My Course\",\n  \"slug\": \"my-course\",\n  \"description\": \"desc\"\n}"}
+      }
+    }
+  ]
+}

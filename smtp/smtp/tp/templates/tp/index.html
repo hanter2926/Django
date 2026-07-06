@@ -1,0 +1,22 @@
+{% extends 'tp/base.html' %}
+
+{% block title %}Home - E-Learning{% endblock %}
+
+{% block content %}
+  <section class="hero-section p-5 rounded-4 shadow-sm bg-white mb-4">
+    <div class="row gx-4 align-items-center">
+      <div class="col-lg-7">
+        <span class="badge bg-warning text-dark mb-3">Trending</span>
+        <h1 class="display-5 fw-bold">Shop premium courses with exclusive offers.</h1>
+        <p class="lead text-muted">Browse expert-led classes, buy instantly, and track your learning like a premium marketplace.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'tp:course_list' %}"><i class="bi bi-shop"></i> Browse Courses</a>
+      </div>
+      <div class="col-lg-5 text-center">
+        <div class="hero-card p-4 rounded-4 shadow-sm bg-gradient">
+          <i class="bi bi-mortarboard-fill display-1 text-white"></i>
+          <p class="mt-3 text-white">The best shopping experience for learners.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

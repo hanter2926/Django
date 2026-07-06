@@ -1,0 +1,26 @@
+{% extends 'tp/base.html' %}
+
+{% block title %}Lesson Form{% endblock %}
+
+{% block content %}
+  <h1 class="title">{% if object %}Edit Lesson{% else %}Create Lesson{% endif %}</h1>
+  <form method="post">{% csrf_token %}
+    <div class="field">
+      <label class="label">Title</label>
+      <div class="control"><input class="input" type="text" name="title" value="{{ object.title|default_if_none:'' }}"></div>
+    </div>
+    <div class="field">
+      <label class="label">Content</label>
+      <div class="control"><textarea class="textarea" name="content">{{ object.content|default_if_none:'' }}</textarea></div>
+    </div>
+    <div class="field">
+      <label class="label">Order</label>
+      <div class="control"><input class="input" type="number" name="order" value="{{ object.order|default_if_none:0 }}"></div>
+    </div>
+    <div class="field">
+      <label class="label">Duration (seconds)</label>
+      <div class="control"><input class="input" type="number" name="duration_seconds" value="{{ object.duration_seconds|default_if_none:'' }}"></div>
+    </div>
+    <div class="control"><button class="button is-primary" type="submit">Save</button></div>
+  </form>
+{% endblock %}

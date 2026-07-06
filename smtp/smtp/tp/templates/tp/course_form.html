@@ -1,0 +1,55 @@
+{% extends 'tp/base.html' %}
+
+{% block title %}{% if object %}Edit Course{% else %}Create Course{% endif %}{% endblock %}
+
+{% block content %}
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-4">
+      <h1 class="h3 mb-4">{% if object %}Edit Course{% else %}Create Course{% endif %}</h1>
+      <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.title.label }}</label>
+          {{ form.title }}
+          <div class="text-danger small">{{ form.title.errors }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.slug.label }}</label>
+          {{ form.slug }}
+          <div class="text-danger small">{{ form.slug.errors }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.price.label }}</label>
+          {{ form.price }}
+          <div class="text-danger small">{{ form.price.errors }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ form.image_url.label }}</label>
+          {{ form.image_url }}
+          <div class="text-danger small">{{ form.image_url.errors }}</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">{{ form.image_file.label }}</label>
+          {{ form.image_file }}
+          <div class="text-danger small">{{ form.image_file.errors }}</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">{{ form.description.label }}</label>
+          {{ form.description }}
+          <div class="text-danger small">{{ form.description.errors }}</div>
+        </div>
+
+        <div class="col-12 pt-3">
+          <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-save"></i> Save Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

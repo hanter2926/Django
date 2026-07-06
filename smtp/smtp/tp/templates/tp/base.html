@@ -1,0 +1,45 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}E-Learning{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUa3Y9Y7wYQy5nD6Fw5rfVtEehi3N0e3JZt1NlE4zX3vhH+vo0Wv3f0k8QBS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'tp/style.css' %}">
+  </head>
+  <body class="bg-light">
+    <header class="header-glass shadow-sm border-bottom">
+      <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between">
+        <a href="{% url 'tp:home' %}" class="brand-link text-decoration-none d-flex align-items-center gap-2">
+          <span class="badge bg-primary rounded-pill px-3 py-2">E-Learn</span>
+          <span class="brand-subtitle">Shop-style courses</span>
+        </a>
+        <nav class="nav gap-3 align-items-center">
+          <a class="nav-link text-dark" href="{% url 'tp:course_list' %}">Courses</a>
+          <a class="nav-link text-dark" href="{% url 'tp:course_create' %}">Create Course</a>
+          {% if user.is_authenticated %}
+            <span class="nav-link fw-semibold">Hi, {{ user.username }}</span>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'tp:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+          {% else %}
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'tp:login' %}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'tp:register' %}"><i class="bi bi-person-plus"></i> Register</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <main class="py-5">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <footer class="footer-glass py-4 mt-auto border-top">
+      <div class="container text-center text-muted small">Designed for e-learning shopping experience · Bootstrap 5 · Razorpay & Cloudinary ready</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6P4U4IqQmF4V0gi4n8zLKxX9fU4c2w8/mzDgEb9jf1LkO9ldz/3" crossorigin="anonymous"></script>
+  </body>
+</html>

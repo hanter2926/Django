@@ -1,0 +1,62 @@
+{% extends 'tp/base.html' %}
+
+{% block title %}Purchase {{ course.title }}{% endblock %}
+
+{% block content %}
+  <h1 class="title">Purchase {{ course.title }}</h1>
+  <p>{{ course.description }}</p>
+  <p class="is-size-6">Price: ₹{{ course.price }}</p>
+
+  {% if order %}
+    <div class="box">
+      <p>Order created: {{ order.id }}</p>
+      <p>Amount: ₹{{ course.price }}</p>
+      <p>Please complete your payment with the Razorpay widget below.</p>
+    </div>
+    <button id="rzp-button" class="button is-primary">Pay with Razorpay</button>
+  {% else %}
+    <form method="post">{% csrf_token %}
+      <button class="button is-primary" type="submit">Create Payment Order</button>
+    </form>
+  {% endif %}
+
+  {% if order %}
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      const options = {
+        key: '{{ razorpay_key_id }}',
+        amount: '{{ order.amount }}',
+        currency: '{{ order.currency }}',
+        name: '{{ course.title }}',
+        description: '{{ course.description|truncatechars:80 }}',
+        order_id: '{{ order.id }}',
+        handler: function (response) {
+          fetch('{% url "tp:course_purchase" course.pk %}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+          }).then(function(res) {
+            if (res.ok) {
+              window.location.href = '{% url "tp:course_detail" course.pk %}';
+            } else {
+              alert('Payment verification failed.');
+            }
+          });
+        },
+        theme: { color: '#00d1b2' }
+      };
+      document.getElementById('rzp-button').onclick = function(e) {
+        const rzp = new Razorpay(options);
+        rzp.open();
+        e.preventDefault();
+      };
+    </script>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'tp/base.html' %}
+
+{% block title %}{{ lesson.title }} - Lesson{% endblock %}
+
+{% block content %}
+  <h1 class="title">{{ lesson.title }}</h1>
+  <p>{{ lesson.content }}</p>
+  <p class="is-size-7">Course: <a href="{% url 'tp:course_detail' lesson.course.pk %}">{{ lesson.course.title }}</a></p>
+
+  <div class="buttons">
+    <a class="button is-info" href="{% url 'tp:lesson_edit' lesson.pk %}">Edit</a>
+    <form method="post" action="{% url 'tp:lesson_delete' lesson.pk %}" style="display:inline">{% csrf_token %}
+      <button class="button is-danger" type="submit">Delete</button>
+    </form>
+  </div>
+
+{% endblock %}

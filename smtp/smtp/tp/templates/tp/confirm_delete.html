@@ -1,0 +1,12 @@
+{% extends 'tp/base.html' %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+  <h1 class="title">Confirm Delete</h1>
+  <p>Are you sure you want to delete this item?</p>
+  <form method="post">{% csrf_token %}
+    <button class="button is-danger" type="submit">Yes, delete</button>
+    <a class="button" href="{{ cancel_url }}">Cancel</a>
+  </form>
+{% endblock %}
