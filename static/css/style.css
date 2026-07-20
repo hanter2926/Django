@@ -1,0 +1,96 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    padding: 10px 40px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+}
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-img {
+    height: 45px;
+    width: auto;
+}
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+.brand-name {
+    color: #cc0000;
+    font-weight: 700;
+    font-size: 18px;
+}
+.tagline {
+    font-size: 11px;
+    color: #555555;
+    font-style: italic;
+}
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    gap: 20px;
+}
+.nav-links a {
+    text-decoration: none;
+    color: #333333;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+.nav-links a.active {
+    background-color: #e8ecef;
+    color: #800000;
+}
+.nav-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 320px;
+}
+.nav-search input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid #dbdbdb;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    background-color: #f9f9f9;
+}
+.search-icon {
+    position: absolute;
+    left: 15px;
+    color: #999999;
+}
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.btn-signin {
+    text-decoration: none;
+    color: #333333;
+    font-weight: 600;
+}
+.btn-register {
+    text-decoration: none;
+    background-color: #800000;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 6px;
+}
